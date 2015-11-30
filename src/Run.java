@@ -10,16 +10,7 @@ class Run {
     }
 
     public static void main(String[] args) {
-        handComparator_test();
-    }
-
-    private static void deck_test() {
-        Deck deck = new Deck();
-
-        while (!deck.isEmpty()) {
-            Card card = deck.dealCard();
-            System.out.println("Suit: " + card.getSuit() + "\t\tRank: " + card.getRank() + "\t\t" + card.toString());
-        }
+        game_test();
     }
 
     private static void game_test() {

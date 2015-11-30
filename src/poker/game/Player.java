@@ -19,6 +19,8 @@ public class Player {
 
     private boolean hasToCall;
 
+    private boolean hasAllIn;
+
     private Blind blind;
 
     public Player(String name, int money) {
@@ -29,6 +31,7 @@ public class Player {
         this.isReady = false;
         this.isPlaying = false;
         this.hasToCall = false;
+        this.hasAllIn = false;
         this.blind = Blind.NO_BLIND;
     }
 
@@ -86,6 +89,14 @@ public class Player {
 
     public void setHasToCall(boolean bool) {
         this.hasToCall = bool;
+    }
+
+    public boolean getHasAllIn() {
+        return this.hasAllIn;
+    }
+
+    public void setHasAllIn(boolean allIn) {
+        this.hasAllIn = allIn;
     }
 
     public Blind getBlind() {

@@ -250,7 +250,7 @@ public class Game {
         System.out.println("\033[1mFLOP\033[0m");
     }
 
-    private void fourthStreet() {
+    private void turn() {
         this.bettingLoop(false);
 
         this.getDeck().dealCard();
@@ -264,10 +264,10 @@ public class Game {
             System.out.println("\t" + card.toString());
         }
 
-        System.out.println("\033[1mFOURTH STREET\033[0m");
+        System.out.println("\033[1mTURN\033[0m");
     }
 
-    private void fifthStreet() {
+    private void river() {
         this.bettingLoop(false);
 
         this.getDeck().dealCard();
@@ -280,7 +280,7 @@ public class Game {
             System.out.println("\t" + card.toString());
         }
 
-        System.out.println("\033[1mFIFTH STREET\033[0m");
+        System.out.println("\033[1mRIVER\033[0m");
     }
 
     private void checkWinner() {
@@ -307,17 +307,19 @@ public class Game {
     public void gameLoop() {
         this.initGame();
 
-        this.flop();
+        while ((this.getIsRunning())) {
+            this.flop();
 
-        this.fourthStreet();
+            this.turn();
 
-        this.fifthStreet();
+            this.river();
 
-        this.bettingLoop(false);
+            this.bettingLoop(false);
 
-        this.checkWinner();
+            this.checkWinner();
 
-        this.setDealer(this.getDealer() + 1);
+            this.setDealer(this.getDealer() + 1);
+        }
     }
 
     private String availableActions(Player player) {
