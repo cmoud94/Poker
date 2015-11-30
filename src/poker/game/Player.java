@@ -23,6 +23,10 @@ public class Player {
 
     private Blind blind;
 
+    public enum Blind {
+        NO_BLIND, DEALER, SMALL_BLIND, BIG_BLIND
+    }
+
     public Player(String name, int money) {
         this.name = name;
         this.cards = new ArrayList<>(2);
@@ -107,14 +111,11 @@ public class Player {
         this.blind = blind;
     }
 
-    /*
-    First: DEALER
-    Second: SMALL_BLIND
-    Third: BIG_BLIND
-    Others: NO_BLIND
-     */
-    public enum Blind {
-        NO_BLIND, DEALER, SMALL_BLIND, BIG_BLIND
+    public void newRound() {
+        this.inPot = 0;
+        this.setIsPlaying(true);
+        this.setHasToCall(false);
+        this.setHasAllIn(false);
     }
 
 }

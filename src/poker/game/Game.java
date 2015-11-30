@@ -8,9 +8,9 @@ import java.util.List;
 
 public class Game {
 
-    private final Table table;
+    private Table table;
 
-    private final Deck deck;
+    private Deck deck;
 
     private final int numOfPlayers;
 
@@ -22,25 +22,36 @@ public class Game {
 
     private int dealer;
 
+    private int bigBlind;
+
     private final BufferedReader br;
 
-    public Game(int numOfPlayers) {
-        this.table = new Table(10);
+    public Game(int numOfPlayers, int bigBlind) {
+        this.table = new Table(bigBlind);
         this.deck = new Deck();
         this.numOfPlayers = numOfPlayers;
         this.players = new ArrayList<>(numOfPlayers);
         this.isRunning = false;
         this.lastBet = 0;
         this.dealer = 0;
+        this.bigBlind = bigBlind;
         this.br = new BufferedReader(new InputStreamReader(System.in));
     }
 
-    private Table getTable() {
+    public Table getTable() {
         return this.table;
+    }
+
+    private void newTable() {
+        this.table = new Table(this.getBigBlind());
     }
 
     public Deck getDeck() {
         return this.deck;
+    }
+
+    private void newDeck() {
+        this.deck = new Deck();
     }
 
     private int getNumOfPlayers() {
@@ -79,6 +90,14 @@ public class Game {
         this.dealer = index;
     }
 
+    private int getBigBlind() {
+        return this.bigBlind;
+    }
+
+    private void setBigBlind(int bigBlind) {
+        this.bigBlind = bigBlind;
+    }
+
     private void initGame() {
         String action;
 
@@ -113,11 +132,6 @@ public class Game {
                 this.setIsRunning(false);
             }
         }
-
-        if (this.getIsRunning()) {
-            this.setBlinds();
-            this.dealCards();
-        }
     }
 
     private void setBlinds() {
@@ -146,19 +160,15 @@ public class Game {
     }
 
     private void dealCards() {
+        for (Player player : this.getPlayers()) {
+            player.getCards().clear();
+        }
+
         for (int i = 0; i < 2; i++) {
             for (Player player : this.getPlayers()) {
                 player.addCard(this.getDeck().dealCard());
             }
         }
-
-        for (Player player : this.getPlayers()) {
-            System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
-                    player.getCard(0).toString() + "\033[0m && \033[1m" +
-                    player.getCard(1).toString() + "\033[0m");
-        }
-
-        System.out.println();
     }
 
     private boolean allCaled() {
@@ -179,6 +189,7 @@ public class Game {
         boolean bigBlind = false;
 
         while (this.getIsRunning()) {
+            again = false;
             for (int i = this.getDealer(); i < this.getPlayers().size(); i++) {
 
                 if (i == this.getDealer() && again) {
@@ -231,6 +242,23 @@ public class Game {
         }
 
         System.out.println("All players called...");
+    }
+
+    private void newRound() {
+        this.newDeck();
+        this.newTable();
+
+        this.setDealer(this.getDealer());
+        this.setBlinds();
+        this.dealCards();
+
+        for (Player player : this.getPlayers()) {
+            player.newRound();
+            System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
+                    player.getCard(0).toString() + "\033[0m && \033[1m" +
+                    player.getCard(1).toString() + "\033[0m");
+        }
+        System.out.println();
     }
 
     private void flop() {
@@ -305,6 +333,8 @@ public class Game {
         this.initGame();
 
         while ((this.getIsRunning())) {
+            this.newRound();
+
             this.flop();
 
             this.turn();
@@ -316,15 +346,6 @@ public class Game {
             this.checkWinner();
 
             this.setDealer(this.getDealer() + 1);
-            this.setBlinds();
-
-            for (Player player : this.getPlayers()) {
-                player.setIsPlaying(true);
-                System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
-                        player.getCard(0).toString() + "\033[0m && \033[1m" +
-                        player.getCard(1).toString() + "\033[0m");
-            }
-            System.out.println();
         }
     }
 
