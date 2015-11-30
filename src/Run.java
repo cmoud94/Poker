@@ -99,6 +99,7 @@ class Run {
         }
 
         HandComparator hc = new HandComparator(hands);
+
         List<Hand> winners = hc.highestHands();
 
         for (Hand winner : winners) {
