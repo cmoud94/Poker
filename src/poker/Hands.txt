@@ -1,0 +1,29 @@
+Royal Flush
+This is the best possible hand in standard five-card Poker. Ace, King, Queen, Jack and 10, all of the same suit.
+
+Straight Flush
+Any five-card sequence in the same suit (e.g.: 8, 9, 10, Jack and Queen of clubs; or 2, 3, 4, 5 and 6 of diamonds).
+
+Four of a Kind
+All four cards of the same value (e.g.: 8, 8, 8, 8; or Queen, Queen, Queen, Queen).
+
+Full House
+Three of a kind combined with a pair (e.g.: 10, 10, 10 with 6, 6; or King, King, King with 5, 5).
+
+Flush
+Any five cards of the same suit, but not in sequence (e.g.: 4, 5, 7, 10 and King of spades).
+
+Straight
+Five cards in sequence, but not in the same suit (e.g.: 7 of clubs, 8 of clubs, 9 of diamonds, 10 of spades and Jack of diamonds).
+
+Three of a Kind
+Three cards of the same value (e.g.: 3, 3, 3; or Jack, Jack, Jack).
+
+Two Pair
+Two separate pairs (e.g.: 2, 2, Queen, Queen).
+
+Pair
+Two cards of the same value (e.g.: 7, 7).
+
+High Card
+If a Poker hand contains none of the above combinations, it's valued by the highest card in it.
