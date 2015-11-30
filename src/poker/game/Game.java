@@ -152,12 +152,13 @@ public class Game {
             }
         }
 
-        // TODO: Smazat
         for (Player player : this.getPlayers()) {
             System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
                     player.getCard(0).toString() + "\033[0m && \033[1m" +
                     player.getCard(1).toString() + "\033[0m");
         }
+
+        System.out.println();
     }
 
     private boolean allCaled() {
@@ -295,12 +296,8 @@ public class Game {
         HandComparator hc = new HandComparator(hands);
         List<Hand> winners = hc.highestHands();
 
-        if (winners.size() == 1) {
-            System.out.println("The winner is: " + winners.get(0).getPlayer().getName() + " HS " + winners.get(0).getHandStrength() + " and CV " + winners.get(0).getHandCardsValue());
-        } else {
-            for (Hand winner : winners) {
-                System.out.println(winner.getPlayer().getName() + "'s HS " + winner.getHandStrength() + " and CV " + winner.getHandCardsValue());
-            }
+        for (Hand winner : winners) {
+            System.out.printf("Winner is %s HS: %d CV: %d\n", winner.getPlayer().getName(), winner.getHandStrength(), winner.getHandCardsValue());
         }
     }
 
@@ -319,6 +316,15 @@ public class Game {
             this.checkWinner();
 
             this.setDealer(this.getDealer() + 1);
+            this.setBlinds();
+
+            for (Player player : this.getPlayers()) {
+                player.setIsPlaying(true);
+                System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
+                        player.getCard(0).toString() + "\033[0m && \033[1m" +
+                        player.getCard(1).toString() + "\033[0m");
+            }
+            System.out.println();
         }
     }
 
@@ -329,7 +335,7 @@ public class Game {
             ret += ", check";
         }
 
-        ret += ", call, bet";
+        ret += ", call, bet, all-in";
 
         return ret;
     }
@@ -347,6 +353,9 @@ public class Game {
                 break;
             case "bet":
                 this.actionBet(player);
+                break;
+            case "all-in":
+                this.actionAllIn(player);
                 break;
             default:
                 System.out.println("\033[1m[Game] Wrong action.\033[0m");
@@ -430,6 +439,19 @@ public class Game {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void actionAllIn(Player player) {
+        int bet = player.getMoney();
+
+        player.addMoney(-bet);
+        player.addInPot(bet);
+        this.getTable().addToPot(bet);
+
+        System.out.println("\tYou've bet all your money. Money: '" + player.getMoney() + "'. In pot: '" + this.getTable().getPot() + "'.");
+
+        this.setLastBet(bet);
+        this.afterBet(player);
     }
 
     private void actionBetBlind(Player player, int blind) {
