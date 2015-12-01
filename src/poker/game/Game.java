@@ -177,9 +177,15 @@ public class Game {
         return true;
     }
 
+    /**
+     * TODO: Debug this Sh!t
+     */
+
     private void bettingLoop(boolean firstBetRound) {
         String action;
         boolean again;
+        boolean smallBlind = false;
+        boolean bigBlind = false;
 
         while (this.isRunning()) {
             again = false;
@@ -191,15 +197,21 @@ public class Game {
 
                 if (this.getPlayers().get(i).isPlaying()) {
                     if (firstBetRound) {
-                        if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND) {
+                        if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind() / 2);
+                            smallBlind = true;
                             continue;
                         }
 
-                        if (this.getPlayers().get(i).getBlind() == Player.Blind.BIG_BLIND) {
+                        if (this.getPlayers().get(i).getBlind() == Player.Blind.BIG_BLIND && !bigBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind());
-                            firstBetRound = false;
+                            bigBlind = true;
                             continue;
+                        }
+
+                        if (smallBlind && bigBlind) {
+                            firstBetRound = false;
+                            break;
                         }
                     } else {
                         System.out.println("\033[1m" + this.getPlayers().get(i).getName() + "\033[0m choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
@@ -317,9 +329,11 @@ public class Game {
 
         if (!player.isHasToCall()) {
             ret += ", check";
+        } else {
+            ret += ", call";
         }
 
-        ret += ", call, bet, all-in";
+        ret += ", bet, all-in";
 
         return ret;
     }
