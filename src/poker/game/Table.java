@@ -18,23 +18,18 @@ public class Table {
     }
 
     public int getPot() {
-        return this.pot;
+        return pot;
     }
 
-    public void addToPot(int money) {
-        this.pot += money;
+    public void setPot(int pot) {
+        this.pot = pot;
     }
 
     public int getBigBlind() {
-        return this.bigBlind;
+        return bigBlind;
     }
 
     public List<Card> getCommunityCards() {
-        return this.communityCards;
+        return communityCards;
     }
-
-    public void addCommunityCard(Card card) {
-        this.communityCards.add(card);
-    }
-
 }
