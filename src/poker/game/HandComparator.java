@@ -9,17 +9,15 @@ public class HandComparator {
 
     public HandComparator(List<Hand> hands) {
         this.hands = hands;
-
         for (Hand hand : this.hands) {
             hand.check();
         }
-
         this.sortHandsByCardsValue();
         this.sortHandsByHandStrength();
     }
 
     public List<Hand> getHands() {
-        return this.hands;
+        return hands;
     }
 
     private void sortHandsByHandStrength() {
@@ -74,7 +72,6 @@ public class HandComparator {
                 ret++;
             }
         }
-
         return ret;
     }
 
@@ -86,7 +83,6 @@ public class HandComparator {
                 ret++;
             }
         }
-
         return ret;
     }
 
@@ -107,7 +103,6 @@ public class HandComparator {
                 }
             }
         }
-
         return ret;
     }
 
