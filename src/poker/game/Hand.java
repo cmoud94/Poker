@@ -108,29 +108,29 @@ public class Hand {
         return 0;
     }
 
-    public boolean check() {
+    @SuppressWarnings("UnnecessaryReturnStatement")
+    public void check() {
         if (this.checkRoyalFlush()) {
-            return true;
+            return;
         } else if (this.checkStraightFlush()) {
-            return true;
+            return;
         } else if (this.checkFourOfKind()) {
-            return true;
+            return;
         } else if (this.checkFullHouse()) {
-            return true;
+            return;
         } else if (this.checkFlush()) {
-            return true;
+            return;
         } else if (this.checkStraight()) {
-            return true;
+            return;
         } else if (this.checkThreeOfAKind(true)) {
-            return true;
+            return;
         } else if (this.checkTwoPair()) {
-            return true;
+            return;
         } else if (this.checkPair(true, 1, false)) {
-            return true;
-        } else if (this.checkHighCard()) {
-            return true;
+            return;
+        } else {
+            this.checkHighCard();
         }
-        return false;
     }
 
     private boolean checkRoyalFlush() {
@@ -422,7 +422,7 @@ public class Hand {
         return false;
     }
 
-    private boolean checkHighCard() {
+    private void checkHighCard() {
         this.sortCardsByRank();
 
         for (int i = 0; i < this.getCards().size(); i++) {
@@ -436,7 +436,6 @@ public class Hand {
         }
         this.setHandString("High card");
         this.setHandStrength(1);
-        return true;
     }
 
     // TODO: Smazat
