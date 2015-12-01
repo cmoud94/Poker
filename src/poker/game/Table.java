@@ -6,7 +6,9 @@ import java.util.List;
 public class Table {
 
     private final int bigBlind;
+
     private final List<Card> communityCards;
+
     private int pot;
 
     public Table(int bigBlind) {
@@ -29,5 +31,12 @@ public class Table {
 
     public List<Card> getCommunityCards() {
         return communityCards;
+    }
+
+    public void printCommunityCards() {
+        System.out.println("\033[1mCommunity cards:\033[0m");
+        for (Card card : this.getCommunityCards()) {
+            System.out.println("\t" + card.toString());
+        }
     }
 }
