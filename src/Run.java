@@ -5,10 +5,6 @@ import java.util.List;
 
 class Run {
 
-    private static long time(long start, long end) {
-        return end - start;
-    }
-
     public static void main(String[] args) {
         game_test();
     }
@@ -19,15 +15,15 @@ class Run {
         Player p2 = new Player("Player_2", 1000);
         Player p3 = new Player("Player_3", 1000);
 
-        game.addPlayer(p1);
-        game.addPlayer(p2);
-        game.addPlayer(p3);
+        game.getPlayers().add(p1);
+        game.getPlayers().add(p2);
+        game.getPlayers().add(p3);
 
         game.gameLoop();
     }
 
     private static void hand_test() {
-        Hand hand = null;
+        Hand hand;
         int x = 0;
 
         System.out.println("x: " + ++x);
@@ -35,8 +31,8 @@ class Run {
         Deck deck = new Deck();
         Player p1 = new Player("Player 1", 1000);
 
-        p1.addCard(deck.dealCard());
-        p1.addCard(deck.dealCard());
+        p1.getCards().add(deck.dealCard());
+        p1.getCards().add(deck.dealCard());
 
         deck.dealCard();
 
@@ -44,7 +40,7 @@ class Run {
             if (j == 3 || j == 4) {
                 deck.dealCard();
             }
-            table.addCommunityCard(deck.dealCard());
+            table.getCommunityCards().add(deck.dealCard());
         }
 
         hand = new Hand(table.getCommunityCards(), p1);
@@ -62,13 +58,13 @@ class Run {
         Player p2 = new Player("Player 2", 1000);
         Player p3 = new Player("Player 3", 1000);
 
-        p1.addCard(deck.dealCard());
-        p2.addCard(deck.dealCard());
-        p3.addCard(deck.dealCard());
+        p1.getCards().add(deck.dealCard());
+        p2.getCards().add(deck.dealCard());
+        p3.getCards().add(deck.dealCard());
 
-        p1.addCard(deck.dealCard());
-        p2.addCard(deck.dealCard());
-        p3.addCard(deck.dealCard());
+        p1.getCards().add(deck.dealCard());
+        p2.getCards().add(deck.dealCard());
+        p3.getCards().add(deck.dealCard());
 
         deck.dealCard();
 
@@ -76,7 +72,7 @@ class Run {
             if (j == 3 || j == 4) {
                 deck.dealCard();
             }
-            table.addCommunityCard(deck.dealCard());
+            table.getCommunityCards().add(deck.dealCard());
         }
 
         hands.add(new Hand(table.getCommunityCards(), p1));
