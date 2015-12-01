@@ -23,10 +23,6 @@ public class Player {
 
     private Blind blind;
 
-    public enum Blind {
-        NO_BLIND, DEALER, SMALL_BLIND, BIG_BLIND
-    }
-
     public Player(String name, int money) {
         this.name = name;
         this.cards = new ArrayList<>(2);
@@ -40,71 +36,63 @@ public class Player {
     }
 
     public String getName() {
-        return this.name;
+        return name;
     }
 
     public List<Card> getCards() {
-        return this.cards;
-    }
-
-    public Card getCard(int index) {
-        return this.cards.get(index);
-    }
-
-    public void addCard(Card card) {
-        this.cards.add(card);
+        return cards;
     }
 
     public int getMoney() {
-        return this.money;
+        return money;
     }
 
-    public void addMoney(int money) {
-        this.money += money;
+    public void setMoney(int money) {
+        this.money = money;
     }
 
     public int getInPot() {
-        return this.inPot;
+        return inPot;
     }
 
-    public void addInPot(int money) {
-        this.inPot += money;
+    public void setInPot(int inPot) {
+        this.inPot = inPot;
     }
 
-    public boolean getIsReady() {
-        return this.isReady;
+    public boolean isReady() {
+        return isReady;
     }
 
-    public void setIsReady(boolean isReady) {
-        this.isReady = isReady;
+    public void setReady(boolean ready) {
+        isReady = ready;
     }
 
-    public boolean getIsPlaying() {
-        return this.isPlaying;
+    public boolean isPlaying() {
+        return isPlaying;
     }
 
-    public void setIsPlaying(boolean isPlaying) {
-        this.isPlaying = isPlaying;
+    public void setPlaying(boolean playing) {
+        isPlaying = playing;
     }
 
-    public boolean getHasToCall() {
-        return this.hasToCall;
+    public boolean isHasToCall() {
+        return hasToCall;
     }
 
-    public void setHasToCall(boolean bool) {
-        this.hasToCall = bool;
+    public void setHasToCall(boolean hasToCall) {
+        this.hasToCall = hasToCall;
     }
 
-    public boolean getHasAllIn() {
-        return this.hasAllIn;
+    public boolean isHasAllIn() {
+        return hasAllIn;
     }
 
-    public void setHasAllIn(boolean allIn) {
-        this.hasAllIn = allIn;
+    public void setHasAllIn(boolean hasAllIn) {
+        this.hasAllIn = hasAllIn;
     }
 
     public Blind getBlind() {
-        return this.blind;
+        return blind;
     }
 
     public void setBlind(Blind blind) {
@@ -113,9 +101,13 @@ public class Player {
 
     public void newRound() {
         this.inPot = 0;
-        this.setIsPlaying(true);
+        this.setPlaying(true);
         this.setHasToCall(false);
         this.setHasAllIn(false);
+    }
+
+    public enum Blind {
+        NO_BLIND, DEALER, SMALL_BLIND, BIG_BLIND
     }
 
 }

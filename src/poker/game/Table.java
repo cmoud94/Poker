@@ -5,11 +5,9 @@ import java.util.List;
 
 public class Table {
 
-    private int pot;
-
     private final int bigBlind;
-
     private final List<Card> communityCards;
+    private int pot;
 
     public Table(int bigBlind) {
         this.pot = 0;
