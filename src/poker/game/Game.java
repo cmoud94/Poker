@@ -168,7 +168,7 @@ public class Game {
 
     private boolean allCaled() {
         for (Player p : this.getPlayers()) {
-            if (p.isHasAllIn() && p.isPlaying()) {
+            if (p.isHasToCall() && p.isPlaying()) {
                 return false;
             }
         }
@@ -453,9 +453,7 @@ public class Game {
         for (Player p : this.getPlayers()) {
             if (p == player || !p.isPlaying()) {
                 p.setHasToCall(false);
-            }
-
-            if (p.getInPot() != player.getInPot() && player.isPlaying()) {
+            } else if (p.getInPot() != player.getInPot() && player.isPlaying()) {
                 p.setHasToCall(true);
             }
         }
