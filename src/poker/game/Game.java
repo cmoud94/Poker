@@ -14,6 +14,8 @@ public class Game {
 
     private final BufferedReader br;
 
+    private final int bigBlind;
+
     private Table table;
 
     private Deck deck;
@@ -24,18 +26,32 @@ public class Game {
 
     private int dealer;
 
-    private int bigBlind;
-
     public Game(int numOfPlayers, int bigBlind) {
-        this.table = new Table(bigBlind);
-        this.deck = new Deck();
         this.numOfPlayers = numOfPlayers;
         this.players = new ArrayList<>(numOfPlayers);
+        this.br = new BufferedReader(new InputStreamReader(System.in));
+        this.bigBlind = bigBlind;
+        this.table = new Table(bigBlind);
+        this.deck = new Deck();
         this.isRunning = false;
         this.lastBet = 0;
         this.dealer = 0;
-        this.bigBlind = bigBlind;
-        this.br = new BufferedReader(new InputStreamReader(System.in));
+    }
+
+    public int getNumOfPlayers() {
+        return numOfPlayers;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
+    }
+
+    public BufferedReader getBr() {
+        return br;
+    }
+
+    public int getBigBlind() {
+        return bigBlind;
     }
 
     public Table getTable() {
@@ -52,14 +68,6 @@ public class Game {
 
     public void setDeck(Deck deck) {
         this.deck = deck;
-    }
-
-    public int getNumOfPlayers() {
-        return numOfPlayers;
-    }
-
-    public List<Player> getPlayers() {
-        return players;
     }
 
     public boolean isRunning() {
@@ -86,18 +94,6 @@ public class Game {
         this.dealer = dealer;
     }
 
-    public int getBigBlind() {
-        return bigBlind;
-    }
-
-    public void setBigBlind(int bigBlind) {
-        this.bigBlind = bigBlind;
-    }
-
-    public BufferedReader getBr() {
-        return br;
-    }
-
     private void initGame() {
         String action;
 
@@ -110,7 +106,7 @@ public class Game {
         for (Player player : this.getPlayers()) {
             System.out.println("\033[1m" + player.getName() + "\033[0m are you ready? (\033[1my\033[0m/\033[1mn\033[0m)");
             try {
-                action = this.br.readLine();
+                action = this.getBr().readLine();
                 switch (action) {
                     case "y":
                         player.setReady(true);
@@ -208,7 +204,7 @@ public class Game {
                     } else {
                         System.out.println("\033[1m" + this.getPlayers().get(i).getName() + "\033[0m choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
                         try {
-                            action = this.br.readLine();
+                            action = this.getBr().readLine();
                             this.handleAction(action, this.getPlayers().get(i));
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -362,7 +358,7 @@ public class Game {
         } else {
             System.out.println("\033[1m" + player.getName() + "\033[0m choose new action. (" + this.availableActions(player) + ")");
             try {
-                String action = this.br.readLine();
+                String action = this.getBr().readLine();
                 this.handleAction(action, player);
             } catch (IOException e) {
                 e.printStackTrace();
