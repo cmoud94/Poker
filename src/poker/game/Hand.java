@@ -44,7 +44,7 @@ public class Hand {
         return handString;
     }
 
-    public void setHandString(String handString) {
+    private void setHandString(String handString) {
         this.handString = handString;
     }
 
@@ -52,7 +52,7 @@ public class Hand {
         return handStrength;
     }
 
-    public void setHandStrength(int handStrength) {
+    private void setHandStrength(int handStrength) {
         this.handStrength = handStrength;
     }
 
@@ -60,7 +60,7 @@ public class Hand {
         return handCardsValue;
     }
 
-    public void setHandCardsValue(int handCardsValue) {
+    private void setHandCardsValue(int handCardsValue) {
         this.handCardsValue = handCardsValue;
     }
 
@@ -115,7 +115,7 @@ public class Hand {
             return true;
         } else if (this.checkFourOfKind()) {
             return true;
-        } /*else if (this.checkFullHouse()) {
+        } else if (this.checkFullHouse()) {
             return true;
         } else if (this.checkFlush()) {
             return true;
@@ -129,12 +129,12 @@ public class Hand {
             return true;
         } else {
             this.checkHighCard();
-        }*/
+        }
 
-        return false;
+        return true;
     }
 
-    public boolean checkRoyalFlush() {
+    private boolean checkRoyalFlush() {
         this.sortCardsByRank();
         this.sortCardsBySuit();
 
@@ -142,15 +142,16 @@ public class Hand {
             if (this.getCards().get(i).getRank() != 14) {
                 continue;
             }
-            int suit = this.getCards().get(i).getSuit();
+
             this.getHand().clear();
+            int suit = this.getCards().get(i).getSuit();
+
             for (int j = 0; j < 5; j++) {
                 if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    int suitCmp = this.compareCardSuit(c1, c2);
 
-                    if (suitCmp != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
+                    if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
                         break;
                     }
                 }
@@ -162,31 +163,32 @@ public class Hand {
                 if (this.getHand().size() == 5) {
                     this.setHandString("Royal Flush");
                     this.setHandStrength(10);
+                    this.setHandCardsValue(0);
                     return true;
                 }
             }
-
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkStraightFlush() {
+    private boolean checkStraightFlush() {
         this.sortCardsByRank();
         this.sortCardsBySuit();
 
         for (int i = 0; i < 3; i++) {
-            int suit = this.getCards().get(i).getSuit();
             this.getHand().clear();
+            int suit = this.getCards().get(i).getSuit();
+
             for (int j = 0; j < 5; j++) {
                 if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    int suitCmp = this.compareCardSuit(c1, c2);
 
-                    if (suitCmp != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
+                    if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
                         break;
                     }
                 }
@@ -202,51 +204,52 @@ public class Hand {
                     return true;
                 }
             }
-
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkFourOfKind() {
+    private boolean checkFourOfKind() {
         this.sortCardsByRank();
 
         for (int i = 0; i < 4; i++) {
+            this.getHand().clear();
             int rank = this.getCards().get(i).getRank();
+
             for (int j = 0; j < 4; j++) {
                 if (j < 3) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    int rankCmp = this.compareCardRank(c1, c2);
 
-                    if (rank != c1.getRank() || rankCmp != 0) {
-                        this.getHand().clear();
+                    if (this.compareCardRank(c1, c2) != 0 || rank != c1.getRank()) {
                         break;
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
                     this.getHand().add(this.getCards().get(i + j));
+                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
                 if (this.getHand().size() == 4) {
                     this.checkHighCard();
                     this.setHandString("Four of a Kind");
                     this.setHandStrength(8);
-                    this.setHandCardsValue(this.getHand().get(0).getRank());
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkFullHouse() {
+    private boolean checkFullHouse() {
         if (this.checkThreeOfAKind(false)) {
             if (this.checkPair(false, 1, true)) {
                 this.setHandString("Full House");
@@ -255,62 +258,65 @@ public class Hand {
                 return true;
             }
         }
-        this.getHand().clear();
-        return false;
-    }
 
-    public boolean checkFlush() {
-        this.sortCardsByRank();
-        this.sortCardsBySuit();
-
-        for (int i = 0; i < 3; i++) {
-            int suit = this.getCards().get(i).getSuit();
-            this.getHand().clear();
-            for (int j = 0; j < 5; j++) {
-                if (j == 0) {
-                    Card c1 = this.getCards().get(i + j);
-                    Card c2 = this.getCards().get(i + j + 1);
-                    int suitCmp = this.compareCardSuit(c1, c2);
-
-                    if (suitCmp != 0 || suit != c1.getSuit()) {
-                        break;
-                    }
-                }
-
-                if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.getHand().add(this.getCards().get(i + j));
-                }
-
-                if (this.getHand().size() == 5) {
-                    this.setHandString("Flush");
-                    this.setHandStrength(6);
-                    this.setHandCardsValue(this.getHand().get(0).getRank());
-                    return true;
-                }
-            }
-        }
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkStraight() {
+    private boolean checkFlush() {
+        this.sortCardsByRank();
+        this.sortCardsBySuit();
+
+        for (int i = 0; i < 3; i++) {
+            this.getHand().clear();
+            int suit = this.getCards().get(i).getSuit();
+
+            for (int j = 0; j < 5; j++) {
+                if (j < 4) {
+                    Card c1 = this.getCards().get(i + j);
+                    Card c2 = this.getCards().get(i + j + 1);
+
+                    if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit()) {
+                        break;
+                    }
+                }
+
+                if (!this.getHand().contains(this.getCards().get(i + j))) {
+                    this.getHand().add(this.getCards().get(i + j));
+                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
+                }
+
+                if (this.getHand().size() == 5) {
+                    this.setHandString("Flush");
+                    this.setHandStrength(6);
+                    return true;
+                }
+            }
+        }
+
+        this.getHand().clear();
+        this.setHandStrength(0);
+        this.setHandCardsValue(0);
+        return false;
+    }
+
+    private boolean checkStraight() {
         this.sortCardsByRank();
 
         for (int i = 0; i < 3; i++) {
             this.getHand().clear();
+
             for (int j = 0; j < 5; j++) {
                 if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
 
                     if (c1.getRank() != (c2.getRank() + 1)) {
-                        break;
-                    }
-
-                    if (c1.getRank() == 14 && (c2.getRank() != 13 || c2.getRank() != 5)) {
-                        break;
+                        if (!(c1.getRank() == 14 && c2.getRank() == 5)) {
+                            break;
+                        }
                     }
                 }
 
@@ -321,26 +327,30 @@ public class Hand {
                 if (this.getHand().size() == 5) {
                     this.setHandString("Straight");
                     this.setHandStrength(5);
+
                     if (this.getHand().get(0).getRank() == 14 && this.getHand().get(1).getRank() == 5) {
                         this.setHandCardsValue(this.getHand().get(1).getRank());
                     } else {
                         this.setHandCardsValue(this.getHand().get(0).getRank());
                     }
+
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkThreeOfAKind(boolean checkHighCard) {
+    private boolean checkThreeOfAKind(boolean checkHighCard) {
         this.sortCardsByRank();
 
         for (int i = 0; i < 5; i++) {
             this.getHand().clear();
+
             for (int j = 0; j < 3; j++) {
                 if (j == 0) {
                     Card c1 = this.getCards().get(i + j);
@@ -356,43 +366,46 @@ public class Hand {
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
                     this.getHand().add(this.getCards().get(i + j));
+                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
                 if (this.getHand().size() == 3) {
-                    this.setHandString("Three of a Kind");
-                    this.setHandStrength(4);
-                    this.setHandCardsValue(this.getHand().get(0).getRank());
                     if (checkHighCard) {
                         this.checkHighCard();
                     }
+
+                    this.setHandString("Three of a Kind");
+                    this.setHandStrength(4);
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkTwoPair() {
+    private boolean checkTwoPair() {
         if (this.checkPair(false, 1, false)) {
             if (this.checkPair(true, 2, false)) {
                 this.setHandString("Two Pair");
                 this.setHandStrength(3);
-                this.setHandCardsValue(this.getHand().get(0).getRank());
                 return true;
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public boolean checkPair(boolean checkHighCard, int numOfPairs, boolean fullHouseCheck) {
+    private boolean checkPair(boolean checkHighCard, int numOfPairs, boolean fullHouseCheck) {
         this.sortCardsByRank();
         numOfPairs *= 2;
+
         if (fullHouseCheck) {
             numOfPairs += 3;
         }
@@ -410,37 +423,41 @@ public class Hand {
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
                     this.getHand().add(this.getCards().get(i + j));
+                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
                 if (this.getHand().size() == numOfPairs) {
-                    this.setHandString("Pair");
-                    this.setHandStrength(2);
-                    this.setHandCardsValue(this.getHand().get(0).getRank());
                     if (checkHighCard) {
                         this.checkHighCard();
                     }
+
+                    this.setHandString("Pair");
+                    this.setHandStrength(2);
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    public void checkHighCard() {
+    private void checkHighCard() {
         this.sortCardsByRank();
 
         for (int i = 0; i < this.getCards().size(); i++) {
             if (this.getHand().size() == 5) {
                 break;
             }
+
             if (!this.getHand().contains(this.getCards().get(i))) {
                 this.getHand().add(this.getCards().get(i));
                 this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i).getRank());
             }
         }
+
         this.setHandString("High card");
         this.setHandStrength(1);
     }
