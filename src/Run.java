@@ -7,7 +7,14 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        game_test();
+        hand_test();
+    }
+
+    private static void deck_test() {
+        Deck deck = new Deck();
+        for (Card card : deck.getDeck()) {
+            System.out.println(card.getSuitAsString() + " - " + card.getRankAsString() + " - " + card.getRank());
+        }
     }
 
     private static void game_test() {
@@ -27,26 +34,35 @@ class Run {
         Hand hand;
         int x = 0;
 
-        System.out.println("x: " + ++x);
-        Table table = new Table(10);
-        Deck deck = new Deck();
-        Player p1 = new Player("Player 1", 1000);
-
-        p1.getCards().add(deck.dealCard());
-        p1.getCards().add(deck.dealCard());
-
-        deck.dealCard();
-
-        for (int j = 0; j < 5; j++) {
-            if (j == 3 || j == 4) {
-                deck.dealCard();
+        while (true) {
+            if (x % 1000 == 0) {
+                System.out.println("x: " + x);
             }
-            table.getCommunityCards().add(deck.dealCard());
+            x++;
+            Table table = new Table(10);
+            Deck deck = new Deck();
+            Player p1 = new Player("Player 1", 1000);
+
+            p1.getCards().add(deck.dealCard());
+            p1.getCards().add(deck.dealCard());
+
+            deck.dealCard();
+
+            for (int j = 0; j < 5; j++) {
+                if (j == 3 || j == 4) {
+                    deck.dealCard();
+                }
+                table.getCommunityCards().add(deck.dealCard());
+            }
+
+            hand = new Hand(table.getCommunityCards(), p1);
+
+            if (hand.check()) {
+                break;
+            }
         }
 
-        hand = new Hand(table.getCommunityCards(), p1);
-
-        hand.check();
+        //hand.check();
         hand.test();
     }
 

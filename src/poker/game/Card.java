@@ -36,10 +36,10 @@ public class Card {
     }
 
     public String getRankAsString() {
-        return Card.ranks[this.getRank() - 2];
+        return (this.getRank() > 10) ? Card.ranks[this.getRank() - 2].substring(0, 1) : Card.ranks[this.getRank() - 2];
     }
 
     public String toString() {
-        return this.getSuitAsString() + " | " + this.getRankAsString();
+        return this.getRankAsString() + " | " + this.getSuitAsString();
     }
 }
