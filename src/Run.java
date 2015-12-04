@@ -7,7 +7,7 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        hand_test();
+        handComparator_test();
     }
 
     private static void deck_test() {
@@ -62,7 +62,6 @@ class Run {
             }
         }
 
-        //hand.check();
         hand.test();
     }
 

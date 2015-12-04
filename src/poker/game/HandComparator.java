@@ -9,9 +9,11 @@ public class HandComparator {
 
     public HandComparator(List<Hand> hands) {
         this.hands = hands;
+
         for (Hand hand : this.hands) {
             hand.check();
         }
+
         this.sortHandsByCardsValue();
         this.sortHandsByHandStrength();
     }
@@ -69,20 +71,22 @@ public class HandComparator {
 
         for (int i = 0; i < (this.getHands().size() - 1); i++) {
             if (this.getHands().get(i).getHandStrength() == this.getHands().get(i + 1).getHandStrength()) {
-                ret++;
+                ret += (ret == 0) ? 2 : 1;
             }
         }
+
         return ret;
     }
 
     private int checkSameCardsValue(int numOfSameHandStrength) {
         int ret = 0;
 
-        for (int i = 0; i < numOfSameHandStrength; i++) {
+        for (int i = 0; i < (numOfSameHandStrength - 1); i++) {
             if (this.getHands().get(i).getHandCardsValue() == this.getHands().get(i + 1).getHandCardsValue()) {
-                ret++;
+                ret += (ret == 0) ? 2 : 1;
             }
         }
+
         return ret;
     }
 
@@ -103,6 +107,7 @@ public class HandComparator {
                 }
             }
         }
+
         return ret;
     }
 
