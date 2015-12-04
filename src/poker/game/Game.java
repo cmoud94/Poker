@@ -26,6 +26,8 @@ public class Game {
 
     private int dealer;
 
+    private int activePlayers;
+
     public Game(int numOfPlayers, int bigBlind) {
         this.numOfPlayers = numOfPlayers;
         this.players = new ArrayList<>(numOfPlayers);
@@ -35,7 +37,8 @@ public class Game {
         this.deck = new Deck();
         this.isRunning = false;
         this.lastBet = 0;
-        this.dealer = 0;
+        this.dealer = -1;
+        this.activePlayers = numOfPlayers;
     }
 
     public int getNumOfPlayers() {
@@ -94,6 +97,14 @@ public class Game {
         this.dealer = dealer;
     }
 
+    public int getActivePlayers() {
+        return activePlayers;
+    }
+
+    public void setActivePlayers(int activePlayers) {
+        this.activePlayers = activePlayers;
+    }
+
     private void initGame() {
         String action;
 
@@ -132,6 +143,9 @@ public class Game {
 
     private void setBlinds() {
         int dealer, small, big;
+
+        this.setDealer((this.getDealer() + 1) % this.getNumOfPlayers());
+
         dealer = this.getDealer() % this.getNumOfPlayers();
 
         for (Player player : this.getPlayers()) {
@@ -177,10 +191,6 @@ public class Game {
         return true;
     }
 
-    /**
-     * TODO: Debug this Sh!t
-     */
-
     private void bettingLoop(boolean firstBetRound) {
         String action;
         boolean again;
@@ -189,6 +199,7 @@ public class Game {
 
         while (this.isRunning()) {
             again = false;
+
             for (int i = this.getDealer(); i < this.getPlayers().size(); i++) {
 
                 if (i == this.getDealer() && again) {
@@ -249,8 +260,8 @@ public class Game {
     private void newRound() {
         this.setDeck(new Deck());
         this.setTable(new Table(this.getBigBlind()));
+        this.setActivePlayers(this.getNumOfPlayers());
 
-        this.setDealer(this.getDealer());
         this.setBlinds();
         this.dealCards();
 
@@ -264,7 +275,9 @@ public class Game {
     }
 
     private void flop() {
-        this.bettingLoop(true);
+        if (this.getActivePlayers() > 1) {
+            this.bettingLoop(true);
+        }
         this.getDeck().dealCard();
 
         for (int i = 0; i < 3; i++) {
@@ -276,7 +289,9 @@ public class Game {
     }
 
     private void turn() {
-        this.bettingLoop(false);
+        if (this.getActivePlayers() > 1) {
+            this.bettingLoop(false);
+        }
         this.getDeck().dealCard();
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
@@ -285,7 +300,9 @@ public class Game {
     }
 
     private void river() {
-        this.bettingLoop(false);
+        if (this.getActivePlayers() > 1) {
+            this.bettingLoop(false);
+        }
         this.getDeck().dealCard();
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
@@ -315,12 +332,18 @@ public class Game {
 
         while ((this.isRunning())) {
             this.newRound();
+
             this.flop();
+
             this.turn();
+
             this.river();
-            this.bettingLoop(false);
+
+            if (this.getActivePlayers() > 1) {
+                this.bettingLoop(false);
+            }
+
             this.checkWinner();
-            this.setDealer(this.getDealer() + 1);
         }
     }
 
@@ -364,6 +387,7 @@ public class Game {
     private void actionFold(Player player) {
         player.setPlaying(false);
         player.setHasToCall(false);
+        this.setActivePlayers(this.getActivePlayers() - 1);
     }
 
     private void actionCheck(Player player) {

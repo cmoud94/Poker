@@ -7,7 +7,7 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        handComparator_test();
+        game_test();
     }
 
     private static void deck_test() {
@@ -18,14 +18,14 @@ class Run {
     }
 
     private static void game_test() {
-        Game game = new Game(3, 10);
+        Game game = new Game(2, 10);
         Player p1 = new Player("Player_1", 1000);
         Player p2 = new Player("Player_2", 1000);
-        Player p3 = new Player("Player_3", 1000);
+        //Player p3 = new Player("Player_3", 1000);
 
         game.getPlayers().add(p1);
         game.getPlayers().add(p2);
-        game.getPlayers().add(p3);
+        //game.getPlayers().add(p3);
 
         game.gameLoop();
     }
