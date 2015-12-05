@@ -273,7 +273,7 @@ public class Game {
             player.newRound();
             System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
                     player.getCards().get(0).toString() + "\033[0m && \033[1m" +
-                    player.getCards().get(1).toString() + "\033[0m");
+                    player.getCards().get(1).toString() + "\033[0m | Money: " + player.getMoney());
         }
         System.out.println();
     }
@@ -327,21 +327,17 @@ public class Game {
         List<Hand> winners = hc.highestHands();
 
         if (winners.size() == 1 && winners.get(0).getPlayer().isHasAllIn()) {
-            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + " . But he was 'all-in'. Checking other winners...");
-            hands.remove(winners.get(0));
-            hc = new HandComparator(hands);
-            winners.clear();
-            winners = hc.highestHands();
-            System.out.println("Other winners:");
-            for (Hand winner : winners) {
-                System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue());
-            }
+            // TODO: Dodelat rekurzi
         } else if (winners.size() == 1) {
-            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue());
+            Player player = winners.get(0).getPlayer();
+            player.setMoney(player.getMoney() + this.getTable().getPot());
+            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ".");
         } else {
+            int money = this.getTable().getPot() / winners.size();
             System.out.println("We have " + winners.size() + " winners.");
             for (Hand winner : winners) {
-                System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue());
+                winner.getPlayer().setMoney(winner.getPlayer().getMoney() + money);
+                System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue() + ". Getting " + money + ".");
             }
         }
     }
