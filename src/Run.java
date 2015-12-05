@@ -3,7 +3,6 @@ import poker.game.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("unused")
 class Run {
 
     public static void main(String[] args) {
