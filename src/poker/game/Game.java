@@ -265,6 +265,10 @@ public class Game {
         this.setBlinds();
         this.dealCards();
 
+        System.out.println("************************************************************");
+        System.out.println("*                         NEW GAME                         *");
+        System.out.println("************************************************************");
+
         for (Player player : this.getPlayers()) {
             player.newRound();
             System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
@@ -322,8 +326,23 @@ public class Game {
         HandComparator hc = new HandComparator(hands);
         List<Hand> winners = hc.highestHands();
 
-        for (Hand winner : winners) {
-            System.out.printf("Winner is %s HS: %d CV: %d\n", winner.getPlayer().getName(), winner.getHandStrength(), winner.getHandCardsValue());
+        if (winners.size() == 1 && winners.get(0).getPlayer().isHasAllIn()) {
+            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + " . But he was 'all-in'. Checking other winners...");
+            hands.remove(winners.get(0));
+            hc = new HandComparator(hands);
+            winners.clear();
+            winners = hc.highestHands();
+            System.out.println("Other winners:");
+            for (Hand winner : winners) {
+                System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue());
+            }
+        } else if (winners.size() == 1) {
+            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue());
+        } else {
+            System.out.println("We have " + winners.size() + " winners.");
+            for (Hand winner : winners) {
+                System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue());
+            }
         }
     }
 
@@ -406,8 +425,12 @@ public class Game {
 
     private void actionCall(Player player) {
         if (player.isHasToCall()) {
-            int call = this.getLastBet() - player.getInPot();
-            call *= (call < 0) ? -1 : 1;
+            int call = this.getLastBet();
+
+            if (player.getBlind() == Player.Blind.SMALL_BLIND && player.getInPot() == (this.getBigBlind() / 2)) {
+                call = this.getLastBet() - player.getInPot();
+            }
+
             player.setMoney(player.getMoney() - call);
             player.setInPot(player.getInPot() + call);
             player.setHasToCall(false);
@@ -437,26 +460,24 @@ public class Game {
 
     private void actionBet(Player player) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String money;
 
         System.out.println("\033[1m[Game]\033[0m How much you want to bet?");
 
         try {
-            money = br.readLine();
-            int iMoney = Integer.parseInt(money);
-            int bet = iMoney + this.getLastBet();
+            int money = Integer.parseInt(br.readLine());
+            int bet = money + this.getLastBet();
 
             player.setMoney(player.getMoney() - bet);
             player.setInPot(player.getInPot() + bet);
             this.getTable().setPot(this.getTable().getPot() + bet);
 
             if (player.isHasToCall()) {
-                System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + iMoney + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+                System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
             } else {
-                System.out.println("\tYou've bet '" + iMoney + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+                System.out.println("\tYou've bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
             }
 
-            this.setLastBet(iMoney);
+            this.setLastBet(bet);
             this.afterBet(player);
         } catch (IOException e) {
             e.printStackTrace();
@@ -466,7 +487,7 @@ public class Game {
     private void actionAllIn(Player player) {
         int bet = player.getMoney();
 
-        player.setMoney(player.getMoney() - bet);
+        player.setMoney(0);
         player.setInPot(player.getInPot() + bet);
         this.getTable().setPot(this.getTable().getPot() + bet);
 
