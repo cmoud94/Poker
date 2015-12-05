@@ -15,12 +15,20 @@ public class Card {
         this.rank = rank + 2;
     }
 
+    public static String[] getSuits() {
+        return suits;
+    }
+
+    public static String[] getRanks() {
+        return ranks;
+    }
+
     public int getSuit() {
-        return this.suit;
+        return suit;
     }
 
     public int getRank() {
-        return this.rank;
+        return rank;
     }
 
     public String getSuitAsString() {
@@ -28,26 +36,10 @@ public class Card {
     }
 
     public String getRankAsString() {
-        return Card.ranks[this.getRank() - 2];
-    }
-
-    private String getSuitAsString(Card card) {
-        return Card.suits[card.getSuit()];
-    }
-
-    private String getRankAsString(Card card) {
-        return Card.ranks[card.getRank() - 2];
+        return (this.getRank() > 10) ? Card.ranks[this.getRank() - 2].substring(0, 1) : Card.ranks[this.getRank() - 2];
     }
 
     public String toString() {
-        return this.getSuitAsString(this) + " | " + this.getRankAsString(this);
-    }
-
-    public static String[] getSuits() {
-        return Card.suits;
-    }
-
-    public static String[] getRanks() {
-        return Card.ranks;
+        return this.getRankAsString() + " | " + this.getSuitAsString();
     }
 }

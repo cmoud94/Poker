@@ -8,13 +8,17 @@ import java.util.List;
 
 public class Game {
 
-    private Table table;
-
-    private Deck deck;
-
     private final int numOfPlayers;
 
     private final List<Player> players;
+
+    private final BufferedReader br;
+
+    private final int bigBlind;
+
+    private Table table;
+
+    private Deck deck;
 
     private boolean isRunning;
 
@@ -22,120 +26,125 @@ public class Game {
 
     private int dealer;
 
-    private int bigBlind;
-
-    private final BufferedReader br;
+    private int activePlayers;
 
     public Game(int numOfPlayers, int bigBlind) {
-        this.table = new Table(bigBlind);
-        this.deck = new Deck();
         this.numOfPlayers = numOfPlayers;
         this.players = new ArrayList<>(numOfPlayers);
+        this.br = new BufferedReader(new InputStreamReader(System.in));
+        this.bigBlind = bigBlind;
+        this.table = new Table(bigBlind);
+        this.deck = new Deck();
         this.isRunning = false;
         this.lastBet = 0;
-        this.dealer = 0;
-        this.bigBlind = bigBlind;
-        this.br = new BufferedReader(new InputStreamReader(System.in));
+        this.dealer = -1;
+        this.activePlayers = numOfPlayers;
     }
 
-    public Table getTable() {
-        return this.table;
-    }
-
-    private void newTable() {
-        this.table = new Table(this.getBigBlind());
-    }
-
-    public Deck getDeck() {
-        return this.deck;
-    }
-
-    private void newDeck() {
-        this.deck = new Deck();
-    }
-
-    private int getNumOfPlayers() {
-        return this.numOfPlayers;
+    public int getNumOfPlayers() {
+        return numOfPlayers;
     }
 
     public List<Player> getPlayers() {
-        return this.players;
+        return players;
     }
 
-    public void addPlayer(Player player) {
-        this.players.add(player);
+    public BufferedReader getBr() {
+        return br;
     }
 
-    private boolean getIsRunning() {
-        return this.isRunning;
+    public int getBigBlind() {
+        return bigBlind;
     }
 
-    private void setIsRunning(boolean isRunning) {
-        this.isRunning = isRunning;
+    public Table getTable() {
+        return table;
     }
 
-    private int getLastBet() {
-        return this.lastBet;
+    public void setTable(Table table) {
+        this.table = table;
     }
 
-    private void setLastBet(int bet) {
-        this.lastBet = bet;
+    public Deck getDeck() {
+        return deck;
     }
 
-    private int getDealer() {
-        return this.dealer;
+    public void setDeck(Deck deck) {
+        this.deck = deck;
     }
 
-    private void setDealer(int index) {
-        this.dealer = index;
+    public boolean isRunning() {
+        return isRunning;
     }
 
-    private int getBigBlind() {
-        return this.bigBlind;
+    public void setRunning(boolean running) {
+        isRunning = running;
     }
 
-    private void setBigBlind(int bigBlind) {
-        this.bigBlind = bigBlind;
+    public int getLastBet() {
+        return lastBet;
+    }
+
+    public void setLastBet(int lastBet) {
+        this.lastBet = lastBet;
+    }
+
+    public int getDealer() {
+        return dealer;
+    }
+
+    public void setDealer(int dealer) {
+        this.dealer = dealer;
+    }
+
+    public int getActivePlayers() {
+        return activePlayers;
+    }
+
+    public void setActivePlayers(int activePlayers) {
+        this.activePlayers = activePlayers;
     }
 
     private void initGame() {
         String action;
 
         if (this.getNumOfPlayers() != this.getPlayers().size()) {
-            System.out.println("Player count differs from the one that was set! Aborting...");
+            System.out.println("\033[1m[Game]\033[0m Player count differs from the one that was set! Aborting...");
             System.exit(0);
         }
 
-        this.setIsRunning(true);
+        this.setRunning(true);
         for (Player player : this.getPlayers()) {
             System.out.println("\033[1m" + player.getName() + "\033[0m are you ready? (\033[1my\033[0m/\033[1mn\033[0m)");
             try {
-                action = this.br.readLine();
+                action = this.getBr().readLine();
                 switch (action) {
                     case "y":
-                        player.setIsReady(true);
-                        player.setIsPlaying(true);
+                        player.setReady(true);
+                        player.setPlaying(true);
                         break;
                     case "n":
-                        player.setIsReady(false);
-                        player.setIsPlaying(false);
+                        player.setReady(false);
+                        player.setPlaying(false);
                         break;
                     default:
-                        System.out.println("\033[1m[Game] Wrong answer!\033[0m");
+                        System.out.println("\033[1m[Game]\033[0m Wrong answer!");
                         break;
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            if (!player.getIsReady()) {
-                this.setIsRunning(false);
+            if (!player.isReady()) {
+                this.setRunning(false);
             }
         }
     }
 
     private void setBlinds() {
         int dealer, small, big;
+
+        this.setDealer((this.getDealer() + 1) % this.getNumOfPlayers());
 
         dealer = this.getDealer() % this.getNumOfPlayers();
 
@@ -166,14 +175,14 @@ public class Game {
 
         for (int i = 0; i < 2; i++) {
             for (Player player : this.getPlayers()) {
-                player.addCard(this.getDeck().dealCard());
+                player.getCards().add(this.getDeck().dealCard());
             }
         }
     }
 
     private boolean allCaled() {
         for (Player p : this.getPlayers()) {
-            if (p.getHasToCall() && p.getIsPlaying()) {
+            if (p.isHasToCall() && p.isPlaying()) {
                 return false;
             }
         }
@@ -184,19 +193,20 @@ public class Game {
 
     private void bettingLoop(boolean firstBetRound) {
         String action;
-        boolean again = false;
+        boolean again;
         boolean smallBlind = false;
         boolean bigBlind = false;
 
-        while (this.getIsRunning()) {
+        while (this.isRunning()) {
             again = false;
+
             for (int i = this.getDealer(); i < this.getPlayers().size(); i++) {
 
                 if (i == this.getDealer() && again) {
                     break;
                 }
 
-                if (this.getPlayers().get(i).getIsPlaying()) {
+                if (this.getPlayers().get(i).isPlaying()) {
                     if (firstBetRound) {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind() / 2);
@@ -207,27 +217,30 @@ public class Game {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.BIG_BLIND && !bigBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind());
                             bigBlind = true;
-                            firstBetRound = false;
                             continue;
+                        }
+
+                        if (smallBlind && bigBlind) {
+                            firstBetRound = false;
+                            break;
                         }
                     } else {
                         System.out.println("\033[1m" + this.getPlayers().get(i).getName() + "\033[0m choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
                         try {
-                            action = this.br.readLine();
+                            action = this.getBr().readLine();
                             this.handleAction(action, this.getPlayers().get(i));
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
                 } else {
-                    System.out.println("\t\033[1m" + this.getPlayers().get(i).getName() + "\033[0m not playing this round.");
+                    System.out.println("\033[1m" + this.getPlayers().get(i).getName() + "\033[0m not playing this round.");
                     continue;
                 }
 
                 if (i == (this.getPlayers().size() - 1)) {
                     i = -1;
                     again = true;
-                    continue;
                 }
             }
 
@@ -241,74 +254,63 @@ public class Game {
             player.setHasToCall(false);
         }
 
-        System.out.println("All players called...");
+        System.out.println("\033[1m[Game]\033[0m All players called...");
     }
 
     private void newRound() {
-        this.newDeck();
-        this.newTable();
+        this.setDeck(new Deck());
+        this.setTable(new Table(this.getBigBlind()));
+        this.setActivePlayers(this.getNumOfPlayers());
 
-        this.setDealer(this.getDealer());
         this.setBlinds();
         this.dealCards();
+
+        System.out.println("************************************************************");
+        System.out.println("*                         NEW GAME                         *");
+        System.out.println("************************************************************");
 
         for (Player player : this.getPlayers()) {
             player.newRound();
             System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
-                    player.getCard(0).toString() + "\033[0m && \033[1m" +
-                    player.getCard(1).toString() + "\033[0m");
+                    player.getCards().get(0).toString() + "\033[0m && \033[1m" +
+                    player.getCards().get(1).toString() + "\033[0m | Money: " + player.getMoney());
         }
         System.out.println();
     }
 
     private void flop() {
-        this.bettingLoop(true);
-
+        if (this.getActivePlayers() > 1) {
+            this.bettingLoop(true);
+        }
         this.getDeck().dealCard();
 
         for (int i = 0; i < 3; i++) {
-            this.getTable().addCommunityCard(this.getDeck().dealCard());
+            this.getTable().getCommunityCards().add(this.getDeck().dealCard());
         }
 
-        List<Card> cards = this.getTable().getCommunityCards();
-        System.out.println("Community cards:");
-        for (Card card : cards) {
-            System.out.println("\t" + card.toString());
-        }
-
+        this.getTable().printCommunityCards();
         System.out.println("\033[1mFLOP\033[0m");
     }
 
     private void turn() {
-        this.bettingLoop(false);
-
-        this.getDeck().dealCard();
-
-        this.getTable().addCommunityCard(this.getDeck().dealCard());
-
-
-        List<Card> cards = this.getTable().getCommunityCards();
-        System.out.println("Community cards:");
-        for (Card card : cards) {
-            System.out.println("\t" + card.toString());
+        if (this.getActivePlayers() > 1) {
+            this.bettingLoop(false);
         }
+        this.getDeck().dealCard();
+        this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
+        this.getTable().printCommunityCards();
         System.out.println("\033[1mTURN\033[0m");
     }
 
     private void river() {
-        this.bettingLoop(false);
-
-        this.getDeck().dealCard();
-
-        this.getTable().addCommunityCard(this.getDeck().dealCard());
-
-        List<Card> cards = this.getTable().getCommunityCards();
-        System.out.println("Community cards:");
-        for (Card card : cards) {
-            System.out.println("\t" + card.toString());
+        if (this.getActivePlayers() > 1) {
+            this.bettingLoop(false);
         }
+        this.getDeck().dealCard();
+        this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
+        this.getTable().printCommunityCards();
         System.out.println("\033[1mRIVER\033[0m");
     }
 
@@ -316,7 +318,7 @@ public class Game {
         List<Hand> hands = new ArrayList<>();
 
         for (Player player : this.getPlayers()) {
-            if (player.getIsPlaying()) {
+            if (player.isPlaying()) {
                 hands.add(new Hand(this.getTable().getCommunityCards(), player));
             }
         }
@@ -324,15 +326,26 @@ public class Game {
         HandComparator hc = new HandComparator(hands);
         List<Hand> winners = hc.highestHands();
 
-        for (Hand winner : winners) {
-            System.out.printf("Winner is %s HS: %d CV: %d\n", winner.getPlayer().getName(), winner.getHandStrength(), winner.getHandCardsValue());
+        if (winners.size() == 1 && winners.get(0).getPlayer().isHasAllIn()) {
+            // TODO: Dodelat rekurzi
+        } else if (winners.size() == 1) {
+            Player player = winners.get(0).getPlayer();
+            player.setMoney(player.getMoney() + this.getTable().getPot());
+            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ".");
+        } else {
+            int money = this.getTable().getPot() / winners.size();
+            System.out.println("We have " + winners.size() + " winners.");
+            for (Hand winner : winners) {
+                winner.getPlayer().setMoney(winner.getPlayer().getMoney() + money);
+                System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue() + ". Getting " + money + ".");
+            }
         }
     }
 
     public void gameLoop() {
         this.initGame();
 
-        while ((this.getIsRunning())) {
+        while ((this.isRunning())) {
             this.newRound();
 
             this.flop();
@@ -341,22 +354,24 @@ public class Game {
 
             this.river();
 
-            this.bettingLoop(false);
+            if (this.getActivePlayers() > 1) {
+                this.bettingLoop(false);
+            }
 
             this.checkWinner();
-
-            this.setDealer(this.getDealer() + 1);
         }
     }
 
     private String availableActions(Player player) {
         String ret = "fold";
 
-        if (!player.getHasToCall()) {
+        if (!player.isHasToCall()) {
             ret += ", check";
+        } else {
+            ret += ", call";
         }
 
-        ret += ", call, bet, all-in";
+        ret += ", bet, all-in";
 
         return ret;
     }
@@ -379,14 +394,15 @@ public class Game {
                 this.actionAllIn(player);
                 break;
             default:
-                System.out.println("\033[1m[Game] Wrong action.\033[0m");
+                System.out.println("\033[1m[Game]\033[0m Wrong action.");
                 break;
         }
     }
 
     private void actionFold(Player player) {
-        player.setIsPlaying(false);
+        player.setPlaying(false);
         player.setHasToCall(false);
+        this.setActivePlayers(this.getActivePlayers() - 1);
     }
 
     private void actionCheck(Player player) {
@@ -395,7 +411,7 @@ public class Game {
         } else {
             System.out.println("\033[1m" + player.getName() + "\033[0m choose new action. (" + this.availableActions(player) + ")");
             try {
-                String action = this.br.readLine();
+                String action = this.getBr().readLine();
                 this.handleAction(action, player);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -404,13 +420,17 @@ public class Game {
     }
 
     private void actionCall(Player player) {
-        if (player.getHasToCall()) {
-            int call = this.getLastBet() - player.getInPot();
-            call *= (call < 0) ? -1 : 1;
-            player.addMoney(-call);
-            player.addInPot(call);
+        if (player.isHasToCall()) {
+            int call = this.getLastBet();
+
+            if (player.getBlind() == Player.Blind.SMALL_BLIND && player.getInPot() == (this.getBigBlind() / 2)) {
+                call = this.getLastBet() - player.getInPot();
+            }
+
+            player.setMoney(player.getMoney() - call);
+            player.setInPot(player.getInPot() + call);
             player.setHasToCall(false);
-            this.getTable().addToPot(call);
+            this.getTable().setPot(this.getTable().getPot() + call);
 
             System.out.println("\t\033[1m" + player.getName() + "\033[0m | You've called '" + call + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
@@ -424,7 +444,7 @@ public class Game {
         boolean allCalled = true;
 
         for (Player p : this.getPlayers()) {
-            if (p.getHasToCall() && p.getIsPlaying()) {
+            if (p.isHasToCall() && p.isPlaying()) {
                 allCalled = false;
             }
         }
@@ -436,26 +456,24 @@ public class Game {
 
     private void actionBet(Player player) {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String money;
 
-        System.out.println("\033[1mHow much you want to bet?\033[0m");
+        System.out.println("\033[1m[Game]\033[0m How much you want to bet?");
 
         try {
-            money = br.readLine();
-            int iMoney = Integer.parseInt(money);
-            int bet = iMoney + this.getLastBet();
+            int money = Integer.parseInt(br.readLine());
+            int bet = money + this.getLastBet();
 
-            player.addMoney(-bet);
-            player.addInPot(bet);
-            this.getTable().addToPot(bet);
+            player.setMoney(player.getMoney() - bet);
+            player.setInPot(player.getInPot() + bet);
+            this.getTable().setPot(this.getTable().getPot() + bet);
 
-            if (player.getHasToCall()) {
-                System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + iMoney + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+            if (player.isHasToCall()) {
+                System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
             } else {
-                System.out.println("\tYou've bet '" + iMoney + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+                System.out.println("\tYou've bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
             }
 
-            this.setLastBet(iMoney);
+            this.setLastBet(bet);
             this.afterBet(player);
         } catch (IOException e) {
             e.printStackTrace();
@@ -465,9 +483,9 @@ public class Game {
     private void actionAllIn(Player player) {
         int bet = player.getMoney();
 
-        player.addMoney(-bet);
-        player.addInPot(bet);
-        this.getTable().addToPot(bet);
+        player.setMoney(0);
+        player.setInPot(player.getInPot() + bet);
+        this.getTable().setPot(this.getTable().getPot() + bet);
 
         System.out.println("\tYou've bet all your money. Money: '" + player.getMoney() + "'. In pot: '" + this.getTable().getPot() + "'.");
 
@@ -476,9 +494,9 @@ public class Game {
     }
 
     private void actionBetBlind(Player player, int blind) {
-        player.addMoney(-blind);
-        player.addInPot(blind);
-        this.getTable().addToPot(blind);
+        player.setMoney(player.getMoney() - blind);
+        player.setInPot(player.getInPot() + blind);
+        this.getTable().setPot(this.getTable().getPot() + blind);
 
         System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | You've bet '" + blind + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
@@ -488,11 +506,9 @@ public class Game {
 
     private void afterBet(Player player) {
         for (Player p : this.getPlayers()) {
-            if (p == player || !p.getIsPlaying()) {
+            if (p == player || !p.isPlaying()) {
                 p.setHasToCall(false);
-            }
-
-            if (p.getInPot() != player.getInPot() && player.getIsPlaying()) {
+            } else if (p.getInPot() != player.getInPot() && player.isPlaying()) {
                 p.setHasToCall(true);
             }
         }

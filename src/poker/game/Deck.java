@@ -11,7 +11,6 @@ public class Deck {
     public Deck() {
         // Create the Deck of Cards
         this.deck = new ArrayList<>();
-
         for (int s = 0; s < Card.getSuits().length; s++) {
             for (int r = 0; r < Card.getRanks().length; r++) {
                 this.getDeck().add(new Card(s, r));
@@ -20,7 +19,6 @@ public class Deck {
 
         // Shuffle the deck
         Card tmp;
-
         for (int i = 0; i < 1000; i++) {
             int index1 = new Random().nextInt(this.getDeck().size());
             int index2 = new Random().nextInt(this.getDeck().size());
@@ -35,15 +33,10 @@ public class Deck {
         return deck;
     }
 
-    public boolean isEmpty() {
-        return this.getDeck().isEmpty();
-    }
-
     public Card dealCard() {
-        if (this.isEmpty()) {
+        if (this.getDeck().isEmpty()) {
             return null;
         }
-
         return this.getDeck().remove(0);
     }
 

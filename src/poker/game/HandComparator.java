@@ -19,7 +19,7 @@ public class HandComparator {
     }
 
     public List<Hand> getHands() {
-        return this.hands;
+        return hands;
     }
 
     private void sortHandsByHandStrength() {
@@ -71,7 +71,7 @@ public class HandComparator {
 
         for (int i = 0; i < (this.getHands().size() - 1); i++) {
             if (this.getHands().get(i).getHandStrength() == this.getHands().get(i + 1).getHandStrength()) {
-                ret++;
+                ret += (ret == 0) ? 2 : 1;
             }
         }
 
@@ -81,9 +81,9 @@ public class HandComparator {
     private int checkSameCardsValue(int numOfSameHandStrength) {
         int ret = 0;
 
-        for (int i = 0; i < numOfSameHandStrength; i++) {
+        for (int i = 0; i < (numOfSameHandStrength - 1); i++) {
             if (this.getHands().get(i).getHandCardsValue() == this.getHands().get(i + 1).getHandCardsValue()) {
-                ret++;
+                ret += (ret == 0) ? 2 : 1;
             }
         }
 

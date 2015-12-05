@@ -9,7 +9,7 @@ public class Hand {
 
     private final Player player;
 
-    private List<Card> hand;
+    private final List<Card> hand;
 
     private String handString;
 
@@ -24,29 +24,24 @@ public class Hand {
         this.handString = "";
         this.handStrength = 0;
         this.handCardsValue = 0;
-
         this.cards.addAll(communityCards);
         this.cards.addAll(player.getCards());
     }
 
     public List<Card> getCards() {
-        return this.cards;
+        return cards;
     }
 
     public Player getPlayer() {
-        return this.player;
+        return player;
     }
 
     public List<Card> getHand() {
-        return this.hand;
-    }
-
-    private void addToHand(Card card) {
-        this.hand.add(card);
+        return hand;
     }
 
     public String getHandString() {
-        return this.handString;
+        return handString;
     }
 
     private void setHandString(String handString) {
@@ -54,19 +49,19 @@ public class Hand {
     }
 
     public int getHandStrength() {
-        return this.handStrength;
+        return handStrength;
     }
 
-    private void setHandStrength(int strength) {
-        this.handStrength = strength;
+    private void setHandStrength(int handStrength) {
+        this.handStrength = handStrength;
     }
 
     public int getHandCardsValue() {
-        return this.handCardsValue;
+        return handCardsValue;
     }
 
-    private void setHandCardsValue(int value) {
-        this.handCardsValue = value;
+    private void setHandCardsValue(int handCardsValue) {
+        this.handCardsValue = handCardsValue;
     }
 
     private void sortCardsByRank() {
@@ -132,10 +127,11 @@ public class Hand {
             return true;
         } else if (this.checkPair(true, 1, false)) {
             return true;
-        } else if (this.checkHighCard()) {
-            return true;
+        } else {
+            this.checkHighCard();
         }
-        return false;
+
+        return true;
     }
 
     private boolean checkRoyalFlush() {
@@ -143,34 +139,36 @@ public class Hand {
         this.sortCardsBySuit();
 
         for (int i = 0; i < 3; i++) {
-            if (!this.getCards().get(i).getRankAsString().equals("Ace")) {
+            if (this.getCards().get(i).getRank() != 14) {
                 continue;
             }
+
+            this.getHand().clear();
             int suit = this.getCards().get(i).getSuit();
+
             for (int j = 0; j < 5; j++) {
                 if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    int suitCmp = this.compareCardSuit(c1, c2);
 
-                    if (suitCmp != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
+                    if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
                         break;
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
-                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
+                    this.getHand().add(this.getCards().get(i + j));
                 }
 
                 if (this.getHand().size() == 5) {
                     this.setHandString("Royal Flush");
                     this.setHandStrength(10);
+                    this.setHandCardsValue(0);
                     return true;
                 }
             }
-
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -182,31 +180,32 @@ public class Hand {
         this.sortCardsBySuit();
 
         for (int i = 0; i < 3; i++) {
+            this.getHand().clear();
             int suit = this.getCards().get(i).getSuit();
+
             for (int j = 0; j < 5; j++) {
                 if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    int suitCmp = this.compareCardSuit(c1, c2);
 
-                    if (suitCmp != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
+                    if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
                         break;
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
-                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
+                    this.getHand().add(this.getCards().get(i + j));
                 }
 
                 if (this.getHand().size() == 5) {
                     this.setHandString("Straight Flush");
                     this.setHandStrength(9);
+                    this.setHandCardsValue(this.getHand().get(0).getRank());
                     return true;
                 }
             }
-
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -217,23 +216,21 @@ public class Hand {
         this.sortCardsByRank();
 
         for (int i = 0; i < 4; i++) {
+            this.getHand().clear();
+            int rank = this.getCards().get(i).getRank();
+
             for (int j = 0; j < 4; j++) {
-                if (j == 0) {
+                if (j < 3) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    Card c3 = this.getCards().get(i + j + 2);
-                    Card c4 = this.getCards().get(i + j + 3);
-                    int rankCmp12 = this.compareCardRank(c1, c2);
-                    int rankCmp13 = this.compareCardRank(c1, c3);
-                    int rankCmp14 = this.compareCardRank(c1, c4);
 
-                    if (rankCmp12 != 0 || rankCmp13 != 0 || rankCmp14 != 0) {
+                    if (this.compareCardRank(c1, c2) != 0 || rank != c1.getRank()) {
                         break;
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
+                    this.getHand().add(this.getCards().get(i + j));
                     this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
@@ -245,6 +242,7 @@ public class Hand {
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -256,10 +254,14 @@ public class Hand {
             if (this.checkPair(false, 1, true)) {
                 this.setHandString("Full House");
                 this.setHandStrength(7);
+                this.setHandCardsValue(this.getHand().get(0).getRank());
                 return true;
             }
         }
+
         this.getHand().clear();
+        this.setHandStrength(0);
+        this.setHandCardsValue(0);
         return false;
     }
 
@@ -268,25 +270,21 @@ public class Hand {
         this.sortCardsBySuit();
 
         for (int i = 0; i < 3; i++) {
+            this.getHand().clear();
+            int suit = this.getCards().get(i).getSuit();
+
             for (int j = 0; j < 5; j++) {
-                if (j == 0) {
+                if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    Card c3 = this.getCards().get(i + j + 2);
-                    Card c4 = this.getCards().get(i + j + 3);
-                    Card c5 = this.getCards().get(i + j + 4);
-                    int suitCmp12 = this.compareCardSuit(c1, c2);
-                    int suitCmp13 = this.compareCardSuit(c1, c3);
-                    int suitCmp14 = this.compareCardSuit(c1, c4);
-                    int suitCmp15 = this.compareCardSuit(c1, c5);
 
-                    if (suitCmp12 != 0 || suitCmp13 != 0 || suitCmp14 != 0 || suitCmp15 != 0) {
+                    if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit()) {
                         break;
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
+                    this.getHand().add(this.getCards().get(i + j));
                     this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
@@ -297,6 +295,7 @@ public class Hand {
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -307,28 +306,39 @@ public class Hand {
         this.sortCardsByRank();
 
         for (int i = 0; i < 3; i++) {
+            this.getHand().clear();
+
             for (int j = 0; j < 5; j++) {
                 if (j < 4) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
 
                     if (c1.getRank() != (c2.getRank() + 1)) {
-                        break;
+                        if (!(c1.getRank() == 14 && c2.getRank() == 5)) {
+                            break;
+                        }
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
-                    this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
+                    this.getHand().add(this.getCards().get(i + j));
                 }
 
                 if (this.getHand().size() == 5) {
                     this.setHandString("Straight");
                     this.setHandStrength(5);
+
+                    if (this.getHand().get(0).getRank() == 14 && this.getHand().get(1).getRank() == 5) {
+                        this.setHandCardsValue(this.getHand().get(1).getRank());
+                    } else {
+                        this.setHandCardsValue(this.getHand().get(0).getRank());
+                    }
+
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -339,6 +349,8 @@ public class Hand {
         this.sortCardsByRank();
 
         for (int i = 0; i < 5; i++) {
+            this.getHand().clear();
+
             for (int j = 0; j < 3; j++) {
                 if (j == 0) {
                     Card c1 = this.getCards().get(i + j);
@@ -353,7 +365,7 @@ public class Hand {
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
+                    this.getHand().add(this.getCards().get(i + j));
                     this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
@@ -361,12 +373,14 @@ public class Hand {
                     if (checkHighCard) {
                         this.checkHighCard();
                     }
+
                     this.setHandString("Three of a Kind");
                     this.setHandStrength(4);
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -381,6 +395,7 @@ public class Hand {
                 return true;
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
@@ -390,6 +405,7 @@ public class Hand {
     private boolean checkPair(boolean checkHighCard, int numOfPairs, boolean fullHouseCheck) {
         this.sortCardsByRank();
         numOfPairs *= 2;
+
         if (fullHouseCheck) {
             numOfPairs += 3;
         }
@@ -399,15 +415,14 @@ public class Hand {
                 if (j == 0) {
                     Card c1 = this.getCards().get(i + j);
                     Card c2 = this.getCards().get(i + j + 1);
-                    int rankCmp = this.compareCardRank(c1, c2);
 
-                    if (rankCmp != 0) {
+                    if (this.compareCardRank(c1, c2) != 0) {
                         break;
                     }
                 }
 
                 if (!this.getHand().contains(this.getCards().get(i + j))) {
-                    this.addToHand(this.getCards().get(i + j));
+                    this.getHand().add(this.getCards().get(i + j));
                     this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i + j).getRank());
                 }
 
@@ -415,50 +430,48 @@ public class Hand {
                     if (checkHighCard) {
                         this.checkHighCard();
                     }
+
                     this.setHandString("Pair");
                     this.setHandStrength(2);
                     return true;
                 }
             }
         }
+
         this.getHand().clear();
         this.setHandStrength(0);
         this.setHandCardsValue(0);
         return false;
     }
 
-    private boolean checkHighCard() {
+    private void checkHighCard() {
         this.sortCardsByRank();
 
         for (int i = 0; i < this.getCards().size(); i++) {
             if (this.getHand().size() == 5) {
                 break;
             }
+
             if (!this.getHand().contains(this.getCards().get(i))) {
-                this.addToHand(this.getCards().get(i));
+                this.getHand().add(this.getCards().get(i));
                 this.setHandCardsValue(this.getHandCardsValue() + this.getCards().get(i).getRank());
             }
         }
+
         this.setHandString("High card");
         this.setHandStrength(1);
-        return true;
     }
 
     // TODO: Smazat
     public void test() {
         System.out.println(this.getPlayer().getName() + " " + this.getPlayer().getCards());
 
-        /*System.out.println("Cards: ");
-        for (Card card : this.getCards()) {
-            System.out.println("\t" + card.toString());
-        }*/
-
         System.out.println("Found: " + this.getHandString());
         for (Card card : this.getHand()) {
             System.out.println("\t" + card.toString());
         }
 
-        System.out.println("Hand Strength: " + this.getHandStrength());
+        System.out.println("\nHand Strength: " + this.getHandStrength());
         System.out.println("Hand cards value: " + this.getHandCardsValue());
     }
 

@@ -5,11 +5,11 @@ import java.util.List;
 
 public class Table {
 
-    private int pot;
-
     private final int bigBlind;
 
     private final List<Card> communityCards;
+
+    private int pot;
 
     public Table(int bigBlind) {
         this.pot = 0;
@@ -18,23 +18,25 @@ public class Table {
     }
 
     public int getPot() {
-        return this.pot;
+        return pot;
     }
 
-    public void addToPot(int money) {
-        this.pot += money;
+    public void setPot(int pot) {
+        this.pot = pot;
     }
 
     public int getBigBlind() {
-        return this.bigBlind;
+        return bigBlind;
     }
 
     public List<Card> getCommunityCards() {
-        return this.communityCards;
+        return communityCards;
     }
 
-    public void addCommunityCard(Card card) {
-        this.communityCards.add(card);
+    public void printCommunityCards() {
+        System.out.println("\033[1mCommunity cards:\033[0m");
+        for (Card card : this.getCommunityCards()) {
+            System.out.println("\t" + card.toString());
+        }
     }
-
 }
