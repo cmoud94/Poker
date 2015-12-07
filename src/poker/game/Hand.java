@@ -196,7 +196,9 @@ public class Hand {
                     Card c2 = this.getCards().get(i + j + 1);
 
                     if (this.compareCardSuit(c1, c2) != 0 || suit != c1.getSuit() || c1.getRank() != (c2.getRank() + 1)) {
-                        break;
+                        if (!(c1.getRank() == 14 && c2.getRank() == 5)) {
+                            break;
+                        }
                     }
                 }
 
@@ -207,7 +209,13 @@ public class Hand {
                 if (this.getHand().size() == 5) {
                     this.setHandString("Straight Flush");
                     this.setHandStrength(9);
-                    this.setHandCardsValue(this.getHand().get(0).getRank());
+
+                    if (this.getHand().get(0).getRank() == 14 && this.getHand().get(1).getRank() == 5) {
+                        this.setHandCardsValue(this.getHand().get(1).getRank());
+                    } else {
+                        this.setHandCardsValue(this.getHand().get(0).getRank());
+                    }
+
                     return true;
                 }
             }
