@@ -7,10 +7,11 @@ package poker.game;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Table {
+public class Table implements Serializable {
 
     private final int bigBlind;
 

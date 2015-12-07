@@ -165,10 +165,10 @@ public class Server {
         System.out.println("[Server] Stopped");
     }
 
-    private String getClientName(SelectionKey key) {
+    private Player getClientName(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
-        String name = "";
+        Player player = null;
         int readBytes;
 
         buffer.clear();
@@ -177,7 +177,7 @@ public class Server {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                name += new String(bytes, "UTF-8");
+
                 buffer.clear();
             }
 
@@ -186,9 +186,9 @@ public class Server {
                 System.out.println("[Server] Client disconnected");
             }
 
-            if (!name.equals("")) {
-                System.out.println("[Server] " + name + " connected");
-                return name;
+            if (player != null) {
+                System.out.println("[Server] " + player.getName() + " connected");
+                return player;
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -7,6 +7,8 @@ package poker.client;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import poker.game.Player;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -30,15 +32,15 @@ public class Client {
 
     private final int buffSize;
 
-    private String clientName;
+    private Player player;
 
     public Client() {
-        this.clientName = "default";
         this.address = null;
         this.port = 0;
         this.sc = null;
         this.selector = null;
         this.buffSize = 256;
+        this.player = null;
     }
 
     public InetSocketAddress getAddress() {
@@ -77,12 +79,12 @@ public class Client {
         return buffSize;
     }
 
-    public String getClientName() {
-        return clientName;
+    public Player getPlayer() {
+        return player;
     }
 
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
     public void connect(String address, int port) {
@@ -108,7 +110,7 @@ public class Client {
             }
 
             System.out.println("[Client] Connected");
-            this.getSc().write(ByteBuffer.wrap(this.getClientName().getBytes("UTF-8")));
+            //this.getSc().write(ByteBuffer.wrap(/* TODO: Send Player as byte array */));
             this.getSc().register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();

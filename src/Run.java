@@ -1,4 +1,5 @@
 import poker.game.*;
+import poker.utils.Serialize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +14,16 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        game_test();
+        serialization_test();
+    }
+
+    private static void serialization_test() {
+        Deck deck = new Deck();
+        System.out.println(deck.getDeck());
+
+        byte[] bytes = Serialize.getObjectAsBytes((Object) deck);
+        Deck deck1 = (Deck) Serialize.getBytesAsObject(bytes);
+        System.out.println(deck1.getDeck());
     }
 
     private static void deck_test() {
