@@ -42,7 +42,7 @@ public class Table implements Serializable {
     }
 
     public void printCommunityCards() {
-        System.out.println("\033[1mCommunity cards:\033[0m");
+        System.out.println("Community cards:");
         for (Card card : this.getCommunityCards()) {
             System.out.println("\t" + card.toString());
         }

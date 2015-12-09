@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Game {
+public class Game implements Runnable {
 
     private final int numOfPlayers;
 
@@ -59,6 +59,16 @@ public class Game {
 
     public List<Player> getPlayers() {
         return players;
+    }
+
+    public Player getPlayerByPlayerName(String name) {
+        for (Player player : this.getPlayers()) {
+            if (player.getName().equals(name)) {
+                return player;
+            }
+        }
+
+        return null;
     }
 
     public BufferedReader getBr() {
@@ -122,44 +132,22 @@ public class Game {
     }
 
     public void initGame() {
-        String action;
-
         if (this.getNumOfPlayers() != this.getPlayers().size()) {
-            System.out.println("\033[1m[Game]\033[0m Player count differs from the one that was set! Aborting...");
+            System.out.println("[Game] Player count differs from the one that was set! Aborting...");
             System.exit(0);
         }
 
         this.setRunning(true);
 
-        for (Player player : this.getPlayers()) {
-            this.getServer().sendMessage(player, "[Game] " + player.getName() + " - Are you ready?");
+        if (this.getServer() != null) {
+            for (Player player : this.getPlayers()) {
+                this.getServer().sendMessage(player, "[Game] " + player.getName() + " - Are you ready?");
+            }
+        } else {
+            for (Player player : this.getPlayers()) {
+                player.setReady(true);
+            }
         }
-
-        /*for (Player player : this.getPlayers()) {
-            System.out.println("\033[1m" + player.getName() + "\033[0m are you ready? (\033[1my\033[0m/\033[1mn\033[0m)");
-            try {
-                action = this.getBr().readLine();
-                switch (action) {
-                    case "y":
-                        player.setReady(true);
-                        player.setPlaying(true);
-                        break;
-                    case "n":
-                        player.setReady(false);
-                        player.setPlaying(false);
-                        break;
-                    default:
-                        System.out.println("\033[1m[Game]\033[0m Wrong answer!");
-                        break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            if (!player.isReady()) {
-                this.setRunning(false);
-            }
-        }*/
     }
 
     private void setBlinds() {
@@ -213,7 +201,8 @@ public class Game {
     }
 
     private void bettingLoop(boolean firstBetRound) {
-        String action;
+        String action = "";
+        int money = 0;
         boolean again;
         boolean smallBlind = false;
         boolean bigBlind = false;
@@ -246,16 +235,33 @@ public class Game {
                             break;
                         }
                     } else {
-                        System.out.println("\033[1m" + this.getPlayers().get(i).getName() + "\033[0m choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
-                        try {
-                            action = this.getBr().readLine();
-                            this.handleAction(action, this.getPlayers().get(i));
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        do {
+                            System.out.println(this.getPlayers().get(i).getName() + " choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
+
+                            if (this.getServer() != null) {
+                                this.getServer().sendMessage(this.getPlayers().get(i), "choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
+                                Thread thread = new Thread(server, "gameBettingLoop");
+                                thread.start();
+                                action = this.getServer().getLastMessage();
+                                if (action.contains("bet")) {
+                                    money = Integer.parseInt(action.substring(3).trim());
+                                    action = "bet";
+                                }
+                            } else {
+                                try {
+                                    action = this.getBr().readLine();
+                                    if (action.contains("bet")) {
+                                        money = Integer.parseInt(action.substring(3).trim());
+                                        action = "bet";
+                                    }
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        } while (!this.handleAction(action, this.getPlayers().get(i), money));
                     }
                 } else {
-                    System.out.println("\033[1m" + this.getPlayers().get(i).getName() + "\033[0m not playing this round.");
+                    System.out.println(this.getPlayers().get(i).getName() + " not playing this round.");
                     continue;
                 }
 
@@ -275,7 +281,7 @@ public class Game {
             player.setHasToCall(false);
         }
 
-        System.out.println("\033[1m[Game]\033[0m All players called...");
+        System.out.println("[Game] All players called...");
     }
 
     private void newRound() {
@@ -292,9 +298,9 @@ public class Game {
 
         for (Player player : this.getPlayers()) {
             player.newRound();
-            System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | Cards: \033[1m" +
-                    player.getCards().get(0).toString() + "\033[0m && \033[1m" +
-                    player.getCards().get(1).toString() + "\033[0m | Money: " + player.getMoney());
+            System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | Cards: " +
+                    player.getCards().get(0).toString() + " && " +
+                    player.getCards().get(1).toString() + " | Money: " + player.getMoney());
         }
         System.out.println();
     }
@@ -310,7 +316,7 @@ public class Game {
         }
 
         this.getTable().printCommunityCards();
-        System.out.println("\033[1mFLOP\033[0m");
+        System.out.println("FLOP");
     }
 
     private void turn() {
@@ -321,7 +327,7 @@ public class Game {
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
         this.getTable().printCommunityCards();
-        System.out.println("\033[1mTURN\033[0m");
+        System.out.println("TURN");
     }
 
     private void river() {
@@ -332,7 +338,7 @@ public class Game {
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
         this.getTable().printCommunityCards();
-        System.out.println("\033[1mRIVER\033[0m");
+        System.out.println("RIVER");
     }
 
     private void checkWinner() {
@@ -397,50 +403,51 @@ public class Game {
         return ret;
     }
 
-    private void handleAction(String action, Player player) {
+    private boolean handleAction(String action, Player player, int money) {
+        boolean ret = false;
+
         switch (action) {
             case "fold":
-                this.actionFold(player);
+                ret = this.actionFold(player);
                 break;
             case "check":
-                this.actionCheck(player);
+                ret = this.actionCheck(player);
                 break;
             case "call":
-                this.actionCall(player);
+                ret = this.actionCall(player);
                 break;
             case "bet":
-                this.actionBet(player);
+                ret = this.actionBet(player, money);
                 break;
             case "all-in":
-                this.actionAllIn(player);
+                ret = this.actionAllIn(player);
                 break;
             default:
-                System.out.println("\033[1m[Game]\033[0m Wrong action.");
+                System.out.println("[Game] Wrong action.");
                 break;
         }
+
+        return ret;
     }
 
-    private void actionFold(Player player) {
+    private boolean actionFold(Player player) {
         player.setPlaying(false);
         player.setHasToCall(false);
         this.setActivePlayers(this.getActivePlayers() - 1);
+
+        return true;
     }
 
-    private void actionCheck(Player player) {
+    private boolean actionCheck(Player player) {
         if (this.availableActions(player).contains("check")) {
             System.out.println("\t" + player.getName() + " has checked.");
-        } else {
-            System.out.println("\033[1m" + player.getName() + "\033[0m choose new action. (" + this.availableActions(player) + ")");
-            try {
-                String action = this.getBr().readLine();
-                this.handleAction(action, player);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            return true;
         }
+
+        return false;
     }
 
-    private void actionCall(Player player) {
+    private boolean actionCall(Player player) {
         if (player.isHasToCall()) {
             int call = this.getLastBet();
 
@@ -453,12 +460,14 @@ public class Game {
             player.setHasToCall(false);
             this.getTable().setPot(this.getTable().getPot() + call);
 
-            System.out.println("\t\033[1m" + player.getName() + "\033[0m | You've called '" + call + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+            System.out.println("\t" + player.getName() + " | You've called '" + call + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
             this.afterCall();
         } else {
             System.out.println("\tYou don't have to call.");
         }
+
+        return true;
     }
 
     private void afterCall() {
@@ -475,33 +484,26 @@ public class Game {
         }
     }
 
-    private void actionBet(Player player) {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+    private boolean actionBet(Player player, int money) {
+        int bet = money + this.getLastBet();
 
-        System.out.println("\033[1m[Game]\033[0m How much you want to bet?");
+        player.setMoney(player.getMoney() - bet);
+        player.setInPot(player.getInPot() + bet);
+        this.getTable().setPot(this.getTable().getPot() + bet);
 
-        try {
-            int money = Integer.parseInt(br.readLine());
-            int bet = money + this.getLastBet();
-
-            player.setMoney(player.getMoney() - bet);
-            player.setInPot(player.getInPot() + bet);
-            this.getTable().setPot(this.getTable().getPot() + bet);
-
-            if (player.isHasToCall()) {
-                System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
-            } else {
-                System.out.println("\tYou've bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
-            }
-
-            this.setLastBet(bet);
-            this.afterBet(player);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (player.isHasToCall()) {
+            System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+        } else {
+            System.out.println("\tYou've bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
         }
+
+        this.setLastBet(bet);
+        this.afterBet(player);
+
+        return true;
     }
 
-    private void actionAllIn(Player player) {
+    private boolean actionAllIn(Player player) {
         int bet = player.getMoney();
 
         player.setMoney(0);
@@ -512,6 +514,8 @@ public class Game {
 
         this.setLastBet(bet);
         this.afterBet(player);
+
+        return true;
     }
 
     private void actionBetBlind(Player player, int blind) {
@@ -519,7 +523,7 @@ public class Game {
         player.setInPot(player.getInPot() + blind);
         this.getTable().setPot(this.getTable().getPot() + blind);
 
-        System.out.println("\t\033[1m" + player.getName() + "\033[0m | " + player.getBlind() + " | You've bet '" + blind + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+        System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | You've bet '" + blind + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
         this.setLastBet(blind);
         this.afterBet(player);
@@ -535,4 +539,8 @@ public class Game {
         }
     }
 
+    @Override
+    public void run() {
+        this.gameLoop();
+    }
 }

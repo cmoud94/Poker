@@ -249,7 +249,6 @@ public class Client implements Runnable {
                         System.exit(0);
                         break;
                     case "send":
-                        //System.out.println("[Client] What you want to send?");
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
                         this.sendMessage(action);
                         break;

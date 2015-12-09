@@ -37,6 +37,8 @@ public class Server implements Runnable {
 
     private boolean gameRunning;
 
+    private String lastMessage;
+
     public Server(int port, int numOfPlayers, int bigBlind, int startingMoney) {
         this.port = port;
         this.ssc = null;
@@ -46,6 +48,7 @@ public class Server implements Runnable {
         this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
         this.gameRunning = false;
+        this.lastMessage = "";
     }
 
     public int getPort() {
@@ -94,6 +97,14 @@ public class Server implements Runnable {
 
     public void setGameRunning(boolean gameRunning) {
         this.gameRunning = gameRunning;
+    }
+
+    public String getLastMessage() {
+        return lastMessage;
+    }
+
+    public void setLastMessage(String lastMessage) {
+        this.lastMessage = lastMessage;
     }
 
     public void startServer() {
@@ -271,7 +282,9 @@ public class Server implements Runnable {
             }
 
             if (!message.equals("")) {
-                System.out.println("[Server] " + key.attachment() + ": " + message);
+                //System.out.println("[Server] " + key.attachment() + ": " + message);
+                this.setLastMessage(message);
+                this.processMessage((String) key.attachment(), message);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -282,6 +295,37 @@ public class Server implements Runnable {
                 e1.printStackTrace();
             }
         }
+    }
+
+    private void processMessage(String playerName, String message) {
+        Player player = this.getGame().getPlayerByPlayerName(playerName);
+        System.out.println("[Server - processMessage] " + player.getName() + " message: " + message);
+
+        if (!player.isReady() && message.equals("yes")) {
+            player.setReady(true);
+            System.out.println("[Server - processMessage] " + player.getName() + " is now ready to play");
+
+            boolean allReady = true;
+            for (Player p : this.getGame().getPlayers()) {
+                if (!p.isReady()) {
+                    allReady = false;
+                }
+            }
+
+            if (allReady) {
+                System.out.println("[Server] Starting gameLoop");
+                Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
+                gameLoopThread.start();
+            }
+        }
+
+        if (Thread.currentThread().getName().equals("gameBettingLoop")) {
+            System.out.println("[Server - bettingLoop thread] working...");
+            Thread.currentThread().interrupt();
+            System.out.println("[Server - bettingLoop thread] stopped...");
+        }
+
+        this.setLastMessage("");
     }
 
     public void sendMessage(Player player, String message) {
@@ -361,7 +405,6 @@ public class Server implements Runnable {
                         this.sendMessage(name, action);
                         break;
                     case "broadcast":
-                        //System.out.println("[Server] What you want to broadcast?");
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
                         this.broadcast(action);
                         break;

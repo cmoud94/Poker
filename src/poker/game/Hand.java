@@ -478,7 +478,6 @@ public class Hand implements Serializable {
         this.setHandStrength(1);
     }
 
-    // TODO: Smazat
     public void test() {
         System.out.println(this.getPlayer().getName() + " " + this.getPlayer().getCards());
 

@@ -14,7 +14,7 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        serialization_test();
+        game_test();
     }
 
     private static void serialization_test() {
@@ -43,6 +43,7 @@ class Run {
         game.getPlayers().add(p2);
         game.getPlayers().add(p3);
 
+        game.initGame();
         game.gameLoop();
     }
 
