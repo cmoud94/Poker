@@ -7,9 +7,10 @@ package poker.client;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
-import poker.game.Player;
-
+import javax.swing.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -32,8 +33,6 @@ public class Client implements Runnable {
 
     private final int buffSize;
 
-    private Player player;
-
     private String name;
 
     public Client() {
@@ -42,7 +41,6 @@ public class Client implements Runnable {
         this.sc = null;
         this.selector = null;
         this.buffSize = 8192;
-        this.player = null;
         this.name = "default";
     }
 
@@ -80,14 +78,6 @@ public class Client implements Runnable {
 
     public int getBuffSize() {
         return buffSize;
-    }
-
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
     }
 
     public String getName() {
@@ -143,6 +133,10 @@ public class Client implements Runnable {
                     while (iterator.hasNext()) {
                         key = iterator.next();
                         iterator.remove();
+
+                        if (!key.isValid()) {
+                            continue;
+                        }
 
                         if (key.isConnectable()) {
                             System.out.println("[Client] Connectable.");
@@ -217,8 +211,9 @@ public class Client implements Runnable {
             }
 
             if (readBytes < 0) {
+                System.out.println("[Client] Server disconnected");
+                key.cancel();
                 sc.close();
-                System.out.println("[Client] Server dissconnected");
             }
 
             if (!message.equals("")) {
@@ -226,11 +221,44 @@ public class Client implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            key.cancel();
+            try {
+                sc.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
     @Override
     public void run() {
         this.clientLoop();
+    }
+
+    public void consoleLoop() {
+        String action;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        while (true) {
+            try {
+                action = br.readLine();
+
+                switch (action.trim()) {
+                    case "quit":
+                        this.disconnect();
+                        System.exit(0);
+                        break;
+                    case "send":
+                        //System.out.println("[Client] What you want to send?");
+                        action = JOptionPane.showInputDialog("[Client] What you want to send?");
+                        this.sendMessage(action);
+                        break;
+                    default:
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

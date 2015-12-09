@@ -10,13 +10,16 @@ package poker.server;
 import poker.game.Game;
 import poker.game.Player;
 
+import javax.swing.*;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
 import java.util.Iterator;
 
-public class Server {
+public class Server implements Runnable {
 
     private final int port;
 
@@ -25,6 +28,8 @@ public class Server {
     private Selector selector;
 
     private final int buffSize;
+
+    private boolean serverRunning;
 
     private final Game game;
 
@@ -37,15 +42,10 @@ public class Server {
         this.ssc = null;
         this.selector = null;
         this.buffSize = 8192;
+        this.serverRunning = false;
         this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
         this.gameRunning = false;
-
-        this.start();
-
-        this.serverLoop();
-
-        this.stop();
     }
 
     public int getPort() {
@@ -72,6 +72,14 @@ public class Server {
         return buffSize;
     }
 
+    public boolean isServerRunning() {
+        return serverRunning;
+    }
+
+    public void setServerRunning(boolean serverRunning) {
+        this.serverRunning = serverRunning;
+    }
+
     public Game getGame() {
         return game;
     }
@@ -88,25 +96,7 @@ public class Server {
         this.gameRunning = gameRunning;
     }
 
-    public static void main(String[] args) {
-        System.setProperty("file.encoding", "UTF-8");
-
-        if (args.length != 4) {
-            System.out.println("Usage: Server [port] [numberOfPlayers] [bigBlind] [startingMoney]");
-            System.exit(0);
-        } else {
-            int port, numOfPlayers, bigBlind, startingMoney;
-
-            port = Integer.parseInt(args[0]);
-            numOfPlayers = Integer.parseInt(args[1]);
-            bigBlind = Integer.parseInt(args[2]);
-            startingMoney = Integer.parseInt(args[3]);
-
-            new Server(port, numOfPlayers, bigBlind, startingMoney);
-        }
-    }
-
-    private void start() {
+    public void startServer() {
         InetSocketAddress address = new InetSocketAddress(this.getPort());
 
         try {
@@ -125,13 +115,14 @@ public class Server {
 
         try {
             this.getSsc().register(this.getSelector(), SelectionKey.OP_ACCEPT);
+            this.setServerRunning(true);
         } catch (ClosedChannelException e) {
             e.printStackTrace();
         }
     }
 
-    private void serverLoop() {
-        if (this.getSsc().isOpen()) {
+    public void serverLoop() {
+        if (this.getSsc().isOpen() && this.isServerRunning()) {
             System.out.println("[Server] Waiting for clients...");
 
             Iterator<SelectionKey> iterator;
@@ -150,6 +141,10 @@ public class Server {
                     key = iterator.next();
                     iterator.remove();
 
+                    if (!key.isValid()) {
+                        continue;
+                    }
+
                     if (key.isConnectable()) {
                         System.out.println("[Server] Connectable");
                     } else if (key.isAcceptable()) {
@@ -163,18 +158,22 @@ public class Server {
                     }
                 }
             }
+        } else {
+            Thread.currentThread().interrupt();
         }
     }
 
-    private void stop() {
+    public void stopServer() {
         try {
-            this.getSelector().close();
+            //this.getSelector().close();
             this.getSsc().close();
+            this.setServerRunning(false);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         System.out.println("[Server] Stopped");
+        System.exit(0);
     }
 
     private String getClientName(SelectionKey key) {
@@ -194,8 +193,9 @@ public class Server {
             }
 
             if (readBytes < 0) {
-                sc.close();
                 System.out.println("[Server] Client disconnected");
+                key.cancel();
+                sc.close();
             }
 
             if (!name.equals("")) {
@@ -204,6 +204,12 @@ public class Server {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            key.cancel();
+            try {
+                sc.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
 
         return null;
@@ -259,16 +265,22 @@ public class Server {
             }
 
             if (readBytes < 0) {
-                sc.close();
                 System.out.println("[Server] " + key.attachment() + " disconnected");
+                key.cancel();
+                sc.close();
             }
 
             if (!message.equals("")) {
                 System.out.println("[Server] " + key.attachment() + ": " + message);
-                this.broadcast(key.attachment() + ": " + message);
             }
         } catch (IOException e) {
             e.printStackTrace();
+            key.cancel();
+            try {
+                sc.close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
         }
     }
 
@@ -290,6 +302,24 @@ public class Server {
         System.out.println("[Server] Message sent to " + player.getName());
     }
 
+    public void sendMessage(String playerName, String message) {
+        try {
+            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
+
+            for (SelectionKey key : this.getSelector().keys()) {
+                if (key.isValid() && key.channel() instanceof SocketChannel && playerName.equals(key.attachment())) {
+                    SocketChannel sc = (SocketChannel) key.channel();
+                    sc.write(buffer);
+                    buffer.rewind();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[Server] Message sent to " + playerName);
+    }
+
     private void broadcast(String message) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
@@ -308,4 +338,39 @@ public class Server {
         System.out.println("[Server] Broadcast sent");
     }
 
+    @Override
+    public void run() {
+        this.serverLoop();
+    }
+
+    public void consoleLoop() {
+        String action;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        while (true) {
+            try {
+                action = br.readLine();
+
+                switch (action.trim()) {
+                    case "quit":
+                        this.stopServer();
+                        break;
+                    case "send":
+                        String name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        action = JOptionPane.showInputDialog("[Server] Type your message.");
+                        this.sendMessage(name, action);
+                        break;
+                    case "broadcast":
+                        //System.out.println("[Server] What you want to broadcast?");
+                        action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
+                        this.broadcast(action);
+                        break;
+                    default:
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

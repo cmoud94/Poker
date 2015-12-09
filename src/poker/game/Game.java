@@ -132,7 +132,7 @@ public class Game {
         this.setRunning(true);
 
         for (Player player : this.getPlayers()) {
-            this.getServer().sendMessage(player, player.getName() + " - Are you ready?");
+            this.getServer().sendMessage(player, "[Game] " + player.getName() + " - Are you ready?");
         }
 
         /*for (Player player : this.getPlayers()) {

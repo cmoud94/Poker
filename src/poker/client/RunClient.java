@@ -11,9 +11,13 @@ public class RunClient {
 
     public static void main(String[] args) {
         Client client = new Client();
+        Thread thread = new Thread(client, "clientLoop");
+
         client.setName("Player_1");
         client.connect("localhost", 9999);
-        client.clientLoop();
+
+        thread.start();
+        client.consoleLoop();
     }
 
 }
