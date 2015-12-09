@@ -41,7 +41,7 @@ public class Client implements Runnable {
         this.port = 0;
         this.sc = null;
         this.selector = null;
-        this.buffSize = 256;
+        this.buffSize = 8192;
         this.player = null;
         this.name = "default";
     }

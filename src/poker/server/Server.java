@@ -24,7 +24,7 @@ public class Server {
 
     private Selector selector;
 
-    private final int buffSize = 256;
+    private final int buffSize;
 
     private final Game game;
 
@@ -36,6 +36,7 @@ public class Server {
         this.port = port;
         this.ssc = null;
         this.selector = null;
+        this.buffSize = 8192;
         this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
         this.gameRunning = false;
