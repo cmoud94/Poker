@@ -42,6 +42,13 @@ public class Client implements Runnable {
         this.selector = null;
         this.buffSize = 8192;
         this.name = "default";
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
     }
 
     public InetSocketAddress getAddress() {

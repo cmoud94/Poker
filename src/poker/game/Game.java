@@ -236,18 +236,23 @@ public class Game implements Runnable {
                         }
                     } else {
                         do {
-                            System.out.println(this.getPlayers().get(i).getName() + " choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
-
                             if (this.getServer() != null) {
                                 this.getServer().sendMessage(this.getPlayers().get(i), "choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
-                                Thread thread = new Thread(server, "gameBettingLoop");
-                                thread.start();
+                                while (this.getServer().getLastMessage().equals("")) {
+                                    try {
+                                        Thread.sleep(10);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
                                 action = this.getServer().getLastMessage();
+                                this.getServer().setLastMessage("");
                                 if (action.contains("bet")) {
                                     money = Integer.parseInt(action.substring(3).trim());
                                     action = "bet";
                                 }
                             } else {
+                                System.out.println(this.getPlayers().get(i).getName() + " choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
                                 try {
                                     action = this.getBr().readLine();
                                     if (action.contains("bet")) {

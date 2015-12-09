@@ -49,6 +49,13 @@ public class Server implements Runnable {
         this.startingMoney = startingMoney;
         this.gameRunning = false;
         this.lastMessage = "";
+
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getPort() {
@@ -282,7 +289,6 @@ public class Server implements Runnable {
             }
 
             if (!message.equals("")) {
-                //System.out.println("[Server] " + key.attachment() + ": " + message);
                 this.setLastMessage(message);
                 this.processMessage((String) key.attachment(), message);
             }
@@ -302,6 +308,7 @@ public class Server implements Runnable {
         System.out.println("[Server - processMessage] " + player.getName() + " message: " + message);
 
         if (!player.isReady() && message.equals("yes")) {
+            this.setLastMessage("");
             player.setReady(true);
             System.out.println("[Server - processMessage] " + player.getName() + " is now ready to play");
 
@@ -318,14 +325,6 @@ public class Server implements Runnable {
                 gameLoopThread.start();
             }
         }
-
-        if (Thread.currentThread().getName().equals("gameBettingLoop")) {
-            System.out.println("[Server - bettingLoop thread] working...");
-            Thread.currentThread().interrupt();
-            System.out.println("[Server - bettingLoop thread] stopped...");
-        }
-
-        this.setLastMessage("");
     }
 
     public void sendMessage(Player player, String message) {
