@@ -7,13 +7,13 @@ package poker.client;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
-public class ClientRun {
+public class RunClient {
 
     public static void main(String[] args) {
         Client client = new Client();
-
-        //client.setClientName("Player_1");
+        client.setName("Player_1");
         client.connect("localhost", 9999);
+        client.clientLoop();
     }
 
 }

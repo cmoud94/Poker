@@ -20,7 +20,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
-public class Client {
+public class Client implements Runnable {
 
     private InetSocketAddress address;
 
@@ -34,6 +34,8 @@ public class Client {
 
     private Player player;
 
+    private String name;
+
     public Client() {
         this.address = null;
         this.port = 0;
@@ -41,6 +43,7 @@ public class Client {
         this.selector = null;
         this.buffSize = 256;
         this.player = null;
+        this.name = "default";
     }
 
     public InetSocketAddress getAddress() {
@@ -87,6 +90,14 @@ public class Client {
         this.player = player;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void connect(String address, int port) {
         this.setPort(port);
 
@@ -110,7 +121,7 @@ public class Client {
             }
 
             System.out.println("[Client] Connected");
-            //this.getSc().write(ByteBuffer.wrap(/* TODO: Send Player as byte array */));
+            this.getSc().write(ByteBuffer.wrap(this.getName().getBytes()));
             this.getSc().register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
@@ -207,7 +218,7 @@ public class Client {
 
             if (readBytes < 0) {
                 sc.close();
-                System.out.println("[CLient] Server dissconnected");
+                System.out.println("[Client] Server dissconnected");
             }
 
             if (!message.equals("")) {
@@ -216,5 +227,10 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void run() {
+        this.clientLoop();
     }
 }

@@ -34,7 +34,7 @@ class Run {
     }
 
     private static void game_test() {
-        Game game = new Game(3, 10);
+        Game game = new Game(3, 10, null);
         Player p1 = new Player("Player_1", 1000);
         Player p2 = new Player("Player_2", 1000);
         Player p3 = new Player("Player_3", 1000);

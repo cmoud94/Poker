@@ -7,6 +7,8 @@ package poker.game;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import poker.server.Server;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,7 +37,9 @@ public class Game {
 
     private int activePlayers;
 
-    public Game(int numOfPlayers, int bigBlind) {
+    private final Server server;
+
+    public Game(int numOfPlayers, int bigBlind, Server server) {
         this.numOfPlayers = numOfPlayers;
         this.players = new ArrayList<>(numOfPlayers);
         this.br = new BufferedReader(new InputStreamReader(System.in));
@@ -46,6 +50,7 @@ public class Game {
         this.lastBet = 0;
         this.dealer = -1;
         this.activePlayers = numOfPlayers;
+        this.server = server;
     }
 
     public int getNumOfPlayers() {
@@ -112,7 +117,11 @@ public class Game {
         this.activePlayers = activePlayers;
     }
 
-    private void initGame() {
+    public Server getServer() {
+        return server;
+    }
+
+    public void initGame() {
         String action;
 
         if (this.getNumOfPlayers() != this.getPlayers().size()) {
@@ -121,7 +130,12 @@ public class Game {
         }
 
         this.setRunning(true);
+
         for (Player player : this.getPlayers()) {
+            this.getServer().sendMessage(player, player.getName() + " - Are you ready?");
+        }
+
+        /*for (Player player : this.getPlayers()) {
             System.out.println("\033[1m" + player.getName() + "\033[0m are you ready? (\033[1my\033[0m/\033[1mn\033[0m)");
             try {
                 action = this.getBr().readLine();
@@ -145,7 +159,7 @@ public class Game {
             if (!player.isReady()) {
                 this.setRunning(false);
             }
-        }
+        }*/
     }
 
     private void setBlinds() {
@@ -350,7 +364,7 @@ public class Game {
     }
 
     public void gameLoop() {
-        this.initGame();
+        //this.initGame();
 
         while ((this.isRunning())) {
             this.newRound();

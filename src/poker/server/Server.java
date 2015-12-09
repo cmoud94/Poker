@@ -30,12 +30,15 @@ public class Server {
 
     private final int startingMoney;
 
+    private boolean gameRunning;
+
     public Server(int port, int numOfPlayers, int bigBlind, int startingMoney) {
         this.port = port;
         this.ssc = null;
         this.selector = null;
-        this.game = new Game(numOfPlayers, bigBlind);
+        this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
+        this.gameRunning = false;
 
         this.start();
 
@@ -74,6 +77,14 @@ public class Server {
 
     public int getStartingMoney() {
         return startingMoney;
+    }
+
+    public boolean isGameRunning() {
+        return gameRunning;
+    }
+
+    public void setGameRunning(boolean gameRunning) {
+        this.gameRunning = gameRunning;
     }
 
     public static void main(String[] args) {
@@ -165,10 +176,10 @@ public class Server {
         System.out.println("[Server] Stopped");
     }
 
-    private Player getClientName(SelectionKey key) {
+    private String getClientName(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
-        Player player = null;
+        String name = "";
         int readBytes;
 
         buffer.clear();
@@ -177,7 +188,7 @@ public class Server {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-
+                name += new String(bytes, "UTF-8");
                 buffer.clear();
             }
 
@@ -186,9 +197,9 @@ public class Server {
                 System.out.println("[Server] Client disconnected");
             }
 
-            if (player != null) {
-                System.out.println("[Server] " + player.getName() + " connected");
-                return player;
+            if (!name.equals("")) {
+                System.out.println("[Server - getClientName] " + name + " connected");
+                return name;
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -215,12 +226,18 @@ public class Server {
                 iterator.remove();
 
                 if (_key.isReadable()) {
-                    sc.register(this.getSelector(), SelectionKey.OP_READ, this.getClientName(_key));
-                    this.getGame().getPlayers().add(new Player((String) key.attachment(), this.getStartingMoney()));
+                    String playerName = this.getClientName(_key);
+                    sc.register(this.getSelector(), SelectionKey.OP_READ, playerName);
+                    this.getGame().getPlayers().add(new Player(playerName, this.getStartingMoney()));
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        if (this.getGame().getNumOfPlayers() == this.getGame().getPlayers().size() && !this.isGameRunning()) {
+            this.setGameRunning(true);
+            this.getGame().initGame();
         }
     }
 
@@ -242,7 +259,7 @@ public class Server {
 
             if (readBytes < 0) {
                 sc.close();
-                System.out.println("[Server] " + key.attachment() + " dissconnected");
+                System.out.println("[Server] " + key.attachment() + " disconnected");
             }
 
             if (!message.equals("")) {
@@ -252,6 +269,24 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void sendMessage(Player player, String message) {
+        try {
+            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
+
+            for (SelectionKey key : this.getSelector().keys()) {
+                if (key.isValid() && key.channel() instanceof SocketChannel && player.getName().equals(key.attachment())) {
+                    SocketChannel sc = (SocketChannel) key.channel();
+                    sc.write(buffer);
+                    buffer.rewind();
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("[Server] Message sent to " + player.getName());
     }
 
     private void broadcast(String message) {
