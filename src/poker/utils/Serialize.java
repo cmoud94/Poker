@@ -12,17 +12,22 @@ import java.io.*;
 public class Serialize {
 
     public static byte[] getObjectAsBytes(Object object) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream baos = null;
         ObjectOutputStream oos = null;
 
         try {
+            baos = new ByteArrayOutputStream();
             oos = new ObjectOutputStream(baos);
+
             oos.writeObject(object);
             oos.flush();
+
+            byte[] bytes = baos.toByteArray();
+
             oos.close();
             baos.close();
 
-            return baos.toByteArray();
+            return bytes;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -31,20 +36,31 @@ public class Serialize {
     }
 
     public static Object getBytesAsObject(byte[] bytes) {
-        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        ByteArrayInputStream bais = null;
         ObjectInputStream ois = null;
 
         try {
+            bais = new ByteArrayInputStream(bytes);
             ois = new ObjectInputStream(bais);
+
+            Object object = ois.readObject();
+
             ois.close();
             bais.close();
 
-            return ois.readObject();
+            return object;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
 
         return null;
+    }
+
+    public static byte[] concatByteArrays(byte[] first, byte[] second) {
+        byte[] result = new byte[first.length + second.length];
+        System.arraycopy(first, 0, result, 0, first.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        return result;
     }
 
 }

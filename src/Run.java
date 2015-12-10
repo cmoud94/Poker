@@ -14,16 +14,29 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        game_test();
+        objectType_test();
     }
 
     private static void serialization_test() {
         Deck deck = new Deck();
         System.out.println(deck.getDeck());
 
-        byte[] bytes = Serialize.getObjectAsBytes((Object) deck);
+        byte[] bytes = Serialize.getObjectAsBytes(deck);
         Deck deck1 = (Deck) Serialize.getBytesAsObject(bytes);
         System.out.println(deck1.getDeck());
+    }
+
+    private static void objectType_test() {
+        Deck deck = new Deck();
+        System.out.println(deck.getDeck());
+
+        byte[] bytes = Serialize.getObjectAsBytes(deck);
+        Object object = Serialize.getBytesAsObject(bytes);
+        if (object instanceof Card) {
+            System.out.println("Deck is instance of Card");
+        } else {
+            System.out.println("Deck isn't instance of Card");
+        }
     }
 
     private static void deck_test() {

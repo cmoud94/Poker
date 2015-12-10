@@ -9,6 +9,7 @@ package poker.server;
 
 import poker.game.Game;
 import poker.game.Player;
+import poker.utils.Serialize;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -217,7 +218,7 @@ public class Server implements Runnable {
             }
 
             if (!name.equals("")) {
-                System.out.println("[Server - getClientName] " + name + " connected");
+                System.out.println("[Server] " + name + " connected");
                 return name;
             }
         } catch (IOException e) {
@@ -269,7 +270,7 @@ public class Server implements Runnable {
     private void handleRead(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
-        String message = "";
+        byte[] finalBytes = new byte[0];
         int readBytes;
 
         buffer.clear();
@@ -278,19 +279,22 @@ public class Server implements Runnable {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                message += new String(bytes, "UTF-8");
+                finalBytes = Serialize.concatByteArrays(finalBytes, bytes);
                 buffer.clear();
             }
 
             if (readBytes < 0) {
-                System.out.println("[Server] " + key.attachment() + " disconnected");
+                System.out.println("[Server] Client disconnected");
                 key.cancel();
                 sc.close();
             }
 
-            if (!message.equals("")) {
-                this.setLastMessage(message);
-                this.processMessage((String) key.attachment(), message);
+            if (finalBytes.length > 0) {
+                Object object = Serialize.getBytesAsObject(finalBytes);
+
+                if (object != null) {
+                    this.processData((String) key.attachment(), finalBytes);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -303,14 +307,15 @@ public class Server implements Runnable {
         }
     }
 
-    private void processMessage(String playerName, String message) {
+    private void processData(String playerName, byte[] bytes) {
         Player player = this.getGame().getPlayerByPlayerName(playerName);
-        System.out.println("[Server - processMessage] " + player.getName() + " message: " + message);
+        Object object = Serialize.getBytesAsObject(bytes);
+        System.out.println("[Server] " + player.getName() + " sent data");
 
-        if (!player.isReady() && message.equals("yes")) {
+        if (!player.isReady() && object instanceof String && object.equals("yes")) {
             this.setLastMessage("");
             player.setReady(true);
-            System.out.println("[Server - processMessage] " + player.getName() + " is now ready to play");
+            System.out.println("[Server] " + player.getName() + " is now ready to play");
 
             boolean allReady = true;
             for (Player p : this.getGame().getPlayers()) {
@@ -327,9 +332,9 @@ public class Server implements Runnable {
         }
     }
 
-    public void sendMessage(Player player, String message) {
+    public void sendData(Player player, byte[] bytes) {
         try {
-            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
+            ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
             for (SelectionKey key : this.getSelector().keys()) {
                 if (key.isValid() && key.channel() instanceof SocketChannel && player.getName().equals(key.attachment())) {
@@ -342,15 +347,15 @@ public class Server implements Runnable {
             e.printStackTrace();
         }
 
-        System.out.println("[Server] Message sent to " + player.getName());
+        System.out.println("[Server] Data sent to " + player.getName());
     }
 
-    public void sendMessage(String playerName, String message) {
+    public void sendData(String name, byte[] bytes) {
         try {
-            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
+            ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
             for (SelectionKey key : this.getSelector().keys()) {
-                if (key.isValid() && key.channel() instanceof SocketChannel && playerName.equals(key.attachment())) {
+                if (key.isValid() && key.channel() instanceof SocketChannel && name.equals(key.attachment())) {
                     SocketChannel sc = (SocketChannel) key.channel();
                     sc.write(buffer);
                     buffer.rewind();
@@ -360,12 +365,12 @@ public class Server implements Runnable {
             e.printStackTrace();
         }
 
-        System.out.println("[Server] Message sent to " + playerName);
+        System.out.println("[Server] Data sent to " + name);
     }
 
-    private void broadcast(String message) {
+    private void broadcastData(byte[] bytes) {
         try {
-            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
+            ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
             for (SelectionKey key : this.getSelector().keys()) {
                 if (key.isValid() && key.channel() instanceof SocketChannel) {
@@ -401,11 +406,11 @@ public class Server implements Runnable {
                     case "send":
                         String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.sendMessage(name, action);
+                        this.sendData(name, Serialize.getObjectAsBytes(action));
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
-                        this.broadcast(action);
+                        this.broadcastData(Serialize.getObjectAsBytes(action));
                         break;
                     default:
                         break;

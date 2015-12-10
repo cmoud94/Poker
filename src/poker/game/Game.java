@@ -8,6 +8,7 @@ package poker.game;
  */
 
 import poker.server.Server;
+import poker.utils.Serialize;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -141,7 +142,7 @@ public class Game implements Runnable {
 
         if (this.getServer() != null) {
             for (Player player : this.getPlayers()) {
-                this.getServer().sendMessage(player, "[Game] " + player.getName() + " - Are you ready?");
+                this.getServer().sendData(player, Serialize.getObjectAsBytes("[Game] " + player.getName() + " - Are you ready?"));
             }
         } else {
             for (Player player : this.getPlayers()) {
@@ -202,6 +203,7 @@ public class Game implements Runnable {
 
     private void bettingLoop(boolean firstBetRound) {
         String action = "";
+        String availableActions;
         int money = 0;
         boolean again;
         boolean smallBlind = false;
@@ -217,6 +219,8 @@ public class Game implements Runnable {
                 }
 
                 if (this.getPlayers().get(i).isPlaying()) {
+                    availableActions = "choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")";
+
                     if (firstBetRound) {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind() / 2);
@@ -237,7 +241,9 @@ public class Game implements Runnable {
                     } else {
                         do {
                             if (this.getServer() != null) {
-                                this.getServer().sendMessage(this.getPlayers().get(i), "choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
+
+                                this.getServer().sendData(this.getPlayers().get(i), Serialize.getObjectAsBytes(availableActions));
+
                                 while (this.getServer().getLastMessage().equals("")) {
                                     try {
                                         Thread.sleep(10);
@@ -245,14 +251,16 @@ public class Game implements Runnable {
                                         e.printStackTrace();
                                     }
                                 }
+
                                 action = this.getServer().getLastMessage();
                                 this.getServer().setLastMessage("");
+
                                 if (action.contains("bet")) {
                                     money = Integer.parseInt(action.substring(3).trim());
                                     action = "bet";
                                 }
                             } else {
-                                System.out.println(this.getPlayers().get(i).getName() + " choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")");
+                                System.out.println(this.getPlayers().get(i).getName() + availableActions);
                                 try {
                                     action = this.getBr().readLine();
                                     if (action.contains("bet")) {
@@ -375,8 +383,6 @@ public class Game implements Runnable {
     }
 
     public void gameLoop() {
-        //this.initGame();
-
         while ((this.isRunning())) {
             this.newRound();
 

@@ -7,6 +7,8 @@ package poker.client;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import poker.utils.Serialize;
+
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -176,19 +178,6 @@ public class Client implements Runnable {
         }
     }
 
-    public void sendMessage(String message) {
-        try {
-            ByteBuffer buffer = ByteBuffer.wrap(message.getBytes("UTF-8"));
-
-            this.getSc().write(buffer);
-            buffer.clear();
-
-            System.out.println("[Client] Message sent: " + message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     private void handleAccept(SelectionKey key) {
         try {
             SocketChannel sc = ((ServerSocketChannel) key.channel()).accept();
@@ -204,7 +193,7 @@ public class Client implements Runnable {
     private void handleRead(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
-        String message = "";
+        byte[] finalBytes = new byte[0];
         int readBytes;
 
         buffer.clear();
@@ -213,7 +202,7 @@ public class Client implements Runnable {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                message += new String(bytes, "UTF-8");
+                finalBytes = Serialize.concatByteArrays(finalBytes, bytes);
                 buffer.clear();
             }
 
@@ -223,8 +212,12 @@ public class Client implements Runnable {
                 sc.close();
             }
 
-            if (!message.equals("")) {
-                System.out.println("[Client] Message received: " + message);
+            if (finalBytes.length > 0) {
+                Object object = Serialize.getBytesAsObject(finalBytes);
+
+                if (object != null) {
+                    this.processData(finalBytes);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -234,6 +227,23 @@ public class Client implements Runnable {
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
+        }
+    }
+
+    private void processData(byte[] bytes) {
+
+    }
+
+    public void sendMessage(byte[] bytes) {
+        try {
+            ByteBuffer buffer = ByteBuffer.wrap(bytes);
+
+            this.getSc().write(buffer);
+            buffer.clear();
+
+            System.out.println("[Client] Data sent");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -257,7 +267,7 @@ public class Client implements Runnable {
                         break;
                     case "send":
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
-                        this.sendMessage(action);
+                        this.sendMessage(Serialize.getObjectAsBytes(action));
                         break;
                     default:
                         break;
