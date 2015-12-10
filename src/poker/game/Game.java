@@ -260,7 +260,7 @@ public class Game implements Runnable {
                                     action = "bet";
                                 }
                             } else {
-                                System.out.println(this.getPlayers().get(i).getName() + availableActions);
+                                System.out.println(this.getPlayers().get(i).getName() + " " + availableActions);
                                 try {
                                     action = this.getBr().readLine();
                                     if (action.contains("bet")) {
@@ -310,6 +310,12 @@ public class Game implements Runnable {
         System.out.println("************************************************************");
 
         for (Player player : this.getPlayers()) {
+            if (player.getMoney() == 0) {
+                // TODO: Mozna bude lepsi hrace rovnou odstranit ze hry
+                player.setPlaying(false);
+                continue;
+            }
+
             player.newRound();
             System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | Cards: " +
                     player.getCards().get(0).toString() + " && " +
@@ -376,7 +382,15 @@ public class Game implements Runnable {
         List<Hand> winners = hc.highestHands();
 
         if (winners.size() == 1 && winners.get(0).getPlayer().isHasAllIn()) {
-            // TODO: Dodelat rekurzi
+            Player player = winners.get(0).getPlayer();
+            player.setMoney(player.getMoney() + player.getInPot());
+            System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ". Has all-in so selecting other winners.");
+
+            this.getTable().setPot(this.getTable().getPot() - player.getInPot());
+            this.getPlayers().get(this.getPlayers().indexOf(winners.get(0).getPlayer())).setPlaying(false);
+            if (this.getTable().getPot() > 0) {
+                this.checkWinner();
+            }
         } else if (winners.size() == 1) {
             Player player = winners.get(0).getPlayer();
             player.setMoney(player.getMoney() + this.getTable().getPot());
@@ -387,6 +401,7 @@ public class Game implements Runnable {
             for (Hand winner : winners) {
                 winner.getPlayer().setMoney(winner.getPlayer().getMoney() + money);
                 System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue() + ". Getting " + money + ".");
+                this.getTable().setPot(this.getTable().getPot() - money);
             }
         }
     }
@@ -478,7 +493,7 @@ public class Game implements Runnable {
 
     private boolean actionCall(Player player) {
         if (player.isHasToCall()) {
-            int call = this.getLastBet();
+            int call = this.getLastBet() - player.getLastBet();
 
             if (player.getBlind() == Player.Blind.SMALL_BLIND && player.getInPot() == (this.getBigBlind() / 2)) {
                 call = this.getLastBet() - player.getInPot();
@@ -522,19 +537,21 @@ public class Game implements Runnable {
 
         player.setMoney(player.getMoney() - bet);
         player.setInPot(player.getInPot() + bet);
+        player.setLastBet(bet);
         this.getTable().setPot(this.getTable().getPot() + bet);
 
         if (player.isHasToCall()) {
             System.out.println("\tYou've called '" + this.getLastBet() + "' and then bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+            this.setLastBet(bet);
         } else {
             System.out.println("\tYou've bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+            this.setLastBet(money);
         }
 
         if (this.getServer() != null) {
             this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " has bet"));
         }
 
-        this.setLastBet(bet);
         this.afterBet(player);
 
         return true;
@@ -545,6 +562,7 @@ public class Game implements Runnable {
 
         player.setMoney(0);
         player.setInPot(player.getInPot() + bet);
+        player.setLastBet(bet);
         this.getTable().setPot(this.getTable().getPot() + bet);
 
         System.out.println("\tYou've bet all your money. Money: '" + player.getMoney() + "'. In pot: '" + this.getTable().getPot() + "'.");

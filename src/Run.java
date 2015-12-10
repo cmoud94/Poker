@@ -14,7 +14,7 @@ import java.util.List;
 class Run {
 
     public static void main(String[] args) {
-        objectType_test();
+        game_test();
     }
 
     private static void serialization_test() {

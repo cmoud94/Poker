@@ -21,6 +21,8 @@ public class Player implements Serializable {
 
     private int inPot;
 
+    private int lastBet;
+
     private boolean isReady;
 
     private boolean isPlaying;
@@ -36,6 +38,7 @@ public class Player implements Serializable {
         this.cards = new ArrayList<>(2);
         this.money = money;
         this.inPot = 0;
+        this.lastBet = 0;
         this.isReady = false;
         this.isPlaying = false;
         this.hasToCall = false;
@@ -65,6 +68,14 @@ public class Player implements Serializable {
 
     public void setInPot(int inPot) {
         this.inPot = inPot;
+    }
+
+    public int getLastBet() {
+        return lastBet;
+    }
+
+    public void setLastBet(int lastBet) {
+        this.lastBet = lastBet;
     }
 
     public boolean isReady() {
@@ -108,7 +119,8 @@ public class Player implements Serializable {
     }
 
     public void newRound() {
-        this.inPot = 0;
+        this.setInPot(0);
+        this.setLastBet(0);
         this.setPlaying(true);
         this.setHasToCall(false);
         this.setHasAllIn(false);
