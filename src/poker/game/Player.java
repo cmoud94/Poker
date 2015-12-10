@@ -114,6 +114,12 @@ public class Player implements Serializable {
         this.setHasAllIn(false);
     }
 
+    public void printCards() {
+        for (Card card : this.getCards()) {
+            System.out.println("\t" + card.toString());
+        }
+    }
+
     public enum Blind {
         NO_BLIND, DEALER, SMALL_BLIND, BIG_BLIND
     }

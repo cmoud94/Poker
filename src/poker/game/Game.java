@@ -219,7 +219,7 @@ public class Game implements Runnable {
                 }
 
                 if (this.getPlayers().get(i).isPlaying()) {
-                    availableActions = "choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")";
+                    availableActions = "Choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")";
 
                     if (firstBetRound) {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
@@ -328,6 +328,9 @@ public class Game implements Runnable {
             this.getTable().getCommunityCards().add(this.getDeck().dealCard());
         }
 
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(this.getTable()));
+        }
         this.getTable().printCommunityCards();
         System.out.println("FLOP");
     }
@@ -339,6 +342,9 @@ public class Game implements Runnable {
         this.getDeck().dealCard();
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(this.getTable()));
+        }
         this.getTable().printCommunityCards();
         System.out.println("TURN");
     }
@@ -350,6 +356,9 @@ public class Game implements Runnable {
         this.getDeck().dealCard();
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(this.getTable()));
+        }
         this.getTable().printCommunityCards();
         System.out.println("RIVER");
     }
@@ -446,12 +455,21 @@ public class Game implements Runnable {
         player.setHasToCall(false);
         this.setActivePlayers(this.getActivePlayers() - 1);
 
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " has folded"));
+        }
+
         return true;
     }
 
     private boolean actionCheck(Player player) {
         if (this.availableActions(player).contains("check")) {
             System.out.println("\t" + player.getName() + " has checked.");
+
+            if (this.getServer() != null) {
+                this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " has checked"));
+            }
+
             return true;
         }
 
@@ -472,6 +490,10 @@ public class Game implements Runnable {
             this.getTable().setPot(this.getTable().getPot() + call);
 
             System.out.println("\t" + player.getName() + " | You've called '" + call + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+
+            if (this.getServer() != null) {
+                this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " has called"));
+            }
 
             this.afterCall();
         } else {
@@ -508,6 +530,10 @@ public class Game implements Runnable {
             System.out.println("\tYou've bet '" + money + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
         }
 
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " has bet"));
+        }
+
         this.setLastBet(bet);
         this.afterBet(player);
 
@@ -523,6 +549,10 @@ public class Game implements Runnable {
 
         System.out.println("\tYou've bet all your money. Money: '" + player.getMoney() + "'. In pot: '" + this.getTable().getPot() + "'.");
 
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " is all-in"));
+        }
+
         this.setLastBet(bet);
         this.afterBet(player);
 
@@ -535,6 +565,10 @@ public class Game implements Runnable {
         this.getTable().setPot(this.getTable().getPot() + blind);
 
         System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | You've bet '" + blind + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
+
+        if (this.getServer() != null) {
+            this.getServer().broadcastData(Serialize.getObjectAsBytes(player.getName() + " has bet " + player.getBlind()));
+        }
 
         this.setLastBet(blind);
         this.afterBet(player);

@@ -207,7 +207,7 @@ public class Server implements Runnable {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                name += new String(bytes, "UTF-8");
+                name += Serialize.getBytesAsObject(bytes);
                 buffer.clear();
             }
 
@@ -310,24 +310,30 @@ public class Server implements Runnable {
     private void processData(String playerName, byte[] bytes) {
         Player player = this.getGame().getPlayerByPlayerName(playerName);
         Object object = Serialize.getBytesAsObject(bytes);
-        System.out.println("[Server] " + player.getName() + " sent data");
 
-        if (!player.isReady() && object instanceof String && object.equals("yes")) {
-            this.setLastMessage("");
-            player.setReady(true);
-            System.out.println("[Server] " + player.getName() + " is now ready to play");
+        System.out.println("[Server] Received data from " + player.getName());
 
-            boolean allReady = true;
-            for (Player p : this.getGame().getPlayers()) {
-                if (!p.isReady()) {
-                    allReady = false;
+        if (object instanceof String) {
+            if (!player.isReady() && object.equals("yes")) {
+                this.setLastMessage("");
+                player.setReady(true);
+                System.out.println("[Server] " + player.getName() + " is now ready to play");
+
+                boolean allReady = true;
+                for (Player p : this.getGame().getPlayers()) {
+                    if (!p.isReady()) {
+                        allReady = false;
+                    }
                 }
-            }
 
-            if (allReady) {
-                System.out.println("[Server] Starting gameLoop");
-                Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
-                gameLoopThread.start();
+                if (allReady) {
+                    System.out.println("[Server] Starting gameLoop");
+                    Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
+                    gameLoopThread.start();
+                }
+            } else {
+                this.setLastMessage((String) object);
+                System.out.println("[Server] Received message from " + player.getName() + " saying: " + this.getLastMessage());
             }
         }
     }
@@ -368,7 +374,7 @@ public class Server implements Runnable {
         System.out.println("[Server] Data sent to " + name);
     }
 
-    private void broadcastData(byte[] bytes) {
+    public void broadcastData(byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
 

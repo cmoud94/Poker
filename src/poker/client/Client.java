@@ -7,6 +7,8 @@ package poker.client;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import poker.game.Player;
+import poker.game.Table;
 import poker.utils.Serialize;
 
 import javax.swing.*;
@@ -120,7 +122,7 @@ public class Client implements Runnable {
             }
 
             System.out.println("[Client] Connected");
-            this.getSc().write(ByteBuffer.wrap(this.getName().getBytes()));
+            this.getSc().write(ByteBuffer.wrap(Serialize.getObjectAsBytes(this.getName())));
             this.getSc().register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
@@ -231,7 +233,20 @@ public class Client implements Runnable {
     }
 
     private void processData(byte[] bytes) {
+        Object object = Serialize.getBytesAsObject(bytes);
 
+        System.out.println("[Client] Received data from server");
+
+        if (object instanceof String) {
+            System.out.println("\t" + object);
+        } else if (object instanceof Table) {
+            System.out.println("\tIn pot: " + ((Table) object).getPot());
+            System.out.println("\tCommunity cards:");
+            ((Table) object).printCommunityCards();
+        } else if (object instanceof Player) {
+            System.out.println("\tYour cards:");
+            ((Player) object).printCards();
+        }
     }
 
     public void sendMessage(byte[] bytes) {
