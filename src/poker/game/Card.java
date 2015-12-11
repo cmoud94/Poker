@@ -1,7 +1,5 @@
 package poker.game;
 
-import java.io.Serializable;
-
 /**
  * Copyright (C) 2015 Marek Kouřil <marek.kouril.st@vsb.cz>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -9,9 +7,12 @@ import java.io.Serializable;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import java.awt.image.BufferedImage;
+import java.io.Serializable;
+
 public class Card implements Serializable {
 
-    private static final String[] suits = {"Hearts", "Clubs", "Spades", "Diamonds"};
+    private static final String[] suits = {"Hearts", "Diamonds", "Clubs", "Spades"};
 
     private static final String[] ranks = {"2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"};
 
@@ -19,9 +20,15 @@ public class Card implements Serializable {
 
     private final int rank;
 
-    public Card(int suit, int rank) {
+    private final BufferedImage cardImage;
+
+    private final BufferedImage cardBackImage;
+
+    public Card(int suit, int rank, BufferedImage cardImage, BufferedImage cardBackImage) {
         this.suit = suit;
         this.rank = rank + 2;
+        this.cardImage = cardImage;
+        this.cardBackImage = cardBackImage;
     }
 
     public static String[] getSuits() {
@@ -38,6 +45,14 @@ public class Card implements Serializable {
 
     public int getRank() {
         return rank;
+    }
+
+    public BufferedImage getCardImage() {
+        return cardImage;
+    }
+
+    public BufferedImage getCardBackImage() {
+        return cardBackImage;
     }
 
     public String getSuitAsString() {

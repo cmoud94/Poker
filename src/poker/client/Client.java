@@ -7,9 +7,10 @@ package poker.client;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import poker.client.gui.ClientWindow;
 import poker.game.Player;
 import poker.game.Table;
-import poker.utils.Serialize;
+import poker.utils.Utils;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -39,13 +40,16 @@ public class Client implements Runnable {
 
     private String name;
 
-    public Client() {
+    private final ClientWindow window;
+
+    public Client(ClientWindow window) {
         this.address = null;
         this.port = 0;
         this.sc = null;
         this.selector = null;
         this.buffSize = 8192;
         this.name = "default";
+        this.window = window;
     }
 
     public InetSocketAddress getAddress() {
@@ -92,6 +96,10 @@ public class Client implements Runnable {
         this.name = name;
     }
 
+    public ClientWindow getWindow() {
+        return window;
+    }
+
     public void connect(String address, int port) {
         this.setPort(port);
 
@@ -115,7 +123,7 @@ public class Client implements Runnable {
             }
 
             System.out.println("[Client] Connected");
-            this.getSc().write(ByteBuffer.wrap(Serialize.getObjectAsBytes(this.getName())));
+            this.getSc().write(ByteBuffer.wrap(Utils.getObjectAsBytes(this.getName())));
             this.getSc().register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
@@ -197,7 +205,7 @@ public class Client implements Runnable {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                finalBytes = Serialize.concatByteArrays(finalBytes, bytes);
+                finalBytes = Utils.concatByteArrays(finalBytes, bytes);
                 buffer.clear();
             }
 
@@ -208,7 +216,7 @@ public class Client implements Runnable {
             }
 
             if (finalBytes.length > 0) {
-                Object object = Serialize.getBytesAsObject(finalBytes);
+                Object object = Utils.getBytesAsObject(finalBytes);
 
                 if (object != null) {
                     this.processData(finalBytes);
@@ -226,7 +234,7 @@ public class Client implements Runnable {
     }
 
     private void processData(byte[] bytes) {
-        Object object = Serialize.getBytesAsObject(bytes);
+        Object object = Utils.getBytesAsObject(bytes);
 
         System.out.println("[Client] Received data from server");
 
@@ -275,7 +283,7 @@ public class Client implements Runnable {
                         break;
                     case "send":
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
-                        this.sendMessage(Serialize.getObjectAsBytes(action));
+                        this.sendMessage(Utils.getObjectAsBytes(action));
                         break;
                     default:
                         break;

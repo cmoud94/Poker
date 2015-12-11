@@ -1,9 +1,15 @@
 package poker.client.gui;
 
+/**
+ * Copyright (C) 2015 Marek Kouřil <marek.kouril.st@vsb.cz>
+ * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+ * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
+ */
+
 import poker.client.Client;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -14,26 +20,18 @@ public class ConnectionPanel extends JPanel {
 
     private static Client client;
 
-    private static JLabel labelAddress;
-
     private static JTextField textFieldAddress;
-
-    private static JLabel labelName;
 
     private static JTextField textFieldName;
 
-    private static JLabel labelStatus;
-
     private static JButton buttonConnect;
-
-    private static JLabel labelConnStatus;
 
     public ConnectionPanel(int x, int y, int width, int height, Client client) {
         ConnectionPanel.client = client;
 
         this.setBounds(x, y, width, height);
         this.setLayout(null);
-        this.setBorder(new LineBorder(Color.BLUE));
+        //this.setBorder(new LineBorder(Color.BLUE));
 
         this.initComponents();
     }
@@ -47,7 +45,7 @@ public class ConnectionPanel extends JPanel {
         int itemHeight = 30;
         int posY = this.getInsets().top;
 
-        labelAddress = new JLabel("Address:port");
+        JLabel labelAddress = new JLabel("Address:port");
         labelAddress.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
         labelAddress.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelAddress);
@@ -58,7 +56,7 @@ public class ConnectionPanel extends JPanel {
         this.add(textFieldAddress);
         posY += itemHeight;
 
-        labelName = new JLabel("Name");
+        JLabel labelName = new JLabel("Name");
         labelName.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
         labelName.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelName);
@@ -75,13 +73,13 @@ public class ConnectionPanel extends JPanel {
         posY += itemHeight;
         buttonConnect.addActionListener(new buttonConnectAction());
 
-        labelStatus = new JLabel("Connection status", JLabel.CENTER);
+        JLabel labelStatus = new JLabel("Connection status", JLabel.CENTER);
         labelStatus.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
         labelStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelStatus);
         posY += itemHeight;
 
-        labelConnStatus = new JLabel("", JLabel.CENTER);
+        JLabel labelConnStatus = new JLabel("", JLabel.CENTER);
         labelConnStatus.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
         labelConnStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelConnStatus);

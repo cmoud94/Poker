@@ -7,6 +7,9 @@ package poker.game;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
+import poker.utils.Utils;
+
+import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +22,15 @@ public class Deck implements Serializable {
     public Deck() {
         // Create the Deck of Cards
         this.deck = new ArrayList<>();
+
+        BufferedImage cards = Utils.loadImage(this, "/poker/client/gui/img/cards.gif");
+        BufferedImage cardBackImage = Utils.getSubImage(cards, 0, 724, 125, 181);
+
         for (int s = 0; s < Card.getSuits().length; s++) {
             for (int r = 0; r < Card.getRanks().length; r++) {
-                this.getDeck().add(new Card(s, r));
+                // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
+                BufferedImage cardImage = Utils.getSubImage(cards, r * 125, s * 181, 125, 181);
+                this.getDeck().add(new Card(s, r, cardImage, cardBackImage));
             }
         }
 

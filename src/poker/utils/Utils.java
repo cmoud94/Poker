@@ -1,7 +1,5 @@
 package poker.utils;
 
-import java.io.*;
-
 /**
  * Copyright (C) 2015 Marek Kouřil <marek.kouril.st@vsb.cz>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -9,7 +7,13 @@ import java.io.*;
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
 
-public class Serialize {
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.image.BufferedImage;
+import java.io.*;
+import java.net.URL;
+
+public class Utils {
 
     public static byte[] getObjectAsBytes(Object object) {
         ByteArrayOutputStream baos = null;
@@ -61,6 +65,28 @@ public class Serialize {
         System.arraycopy(first, 0, result, 0, first.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
+    }
+
+    public static BufferedImage loadImage(Object parent, String pathToImage) {
+        BufferedImage bufferedImage = null;
+        ImageIcon imageIcon = null;
+
+        try {
+            URL url = parent.getClass().getResource(pathToImage);
+            bufferedImage = ImageIO.read(new FileInputStream(url.getPath()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return bufferedImage;
+    }
+
+    public static BufferedImage getSubImage(BufferedImage bufferedImage, int x, int y, int width, int height) {
+        return bufferedImage.getSubimage(x, y, width, height);
+    }
+
+    public static ImageIcon getScaledImageAsImageIcon(BufferedImage bufferedImage, int width, int height) {
+        return new ImageIcon(bufferedImage.getScaledInstance(width, height, BufferedImage.SCALE_SMOOTH));
     }
 
 }

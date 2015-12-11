@@ -9,7 +9,7 @@ package poker.server;
 
 import poker.game.Game;
 import poker.game.Player;
-import poker.utils.Serialize;
+import poker.utils.Utils;
 
 import javax.swing.*;
 import java.io.BufferedReader;
@@ -207,7 +207,7 @@ public class Server implements Runnable {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                name += Serialize.getBytesAsObject(bytes);
+                name += Utils.getBytesAsObject(bytes);
                 buffer.clear();
             }
 
@@ -279,7 +279,7 @@ public class Server implements Runnable {
                 buffer.flip();
                 byte[] bytes = new byte[buffer.limit()];
                 buffer.get(bytes);
-                finalBytes = Serialize.concatByteArrays(finalBytes, bytes);
+                finalBytes = Utils.concatByteArrays(finalBytes, bytes);
                 buffer.clear();
             }
 
@@ -290,7 +290,7 @@ public class Server implements Runnable {
             }
 
             if (finalBytes.length > 0) {
-                Object object = Serialize.getBytesAsObject(finalBytes);
+                Object object = Utils.getBytesAsObject(finalBytes);
 
                 if (object != null) {
                     this.processData((String) key.attachment(), finalBytes);
@@ -309,7 +309,7 @@ public class Server implements Runnable {
 
     private void processData(String playerName, byte[] bytes) {
         Player player = this.getGame().getPlayerByPlayerName(playerName);
-        Object object = Serialize.getBytesAsObject(bytes);
+        Object object = Utils.getBytesAsObject(bytes);
 
         System.out.println("[Server] Received data from " + player.getName());
 
@@ -412,11 +412,11 @@ public class Server implements Runnable {
                     case "send":
                         String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.sendData(name, Serialize.getObjectAsBytes(action));
+                        this.sendData(name, Utils.getObjectAsBytes(action));
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
-                        this.broadcastData(Serialize.getObjectAsBytes(action));
+                        this.broadcastData(Utils.getObjectAsBytes(action));
                         break;
                     default:
                         break;

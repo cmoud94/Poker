@@ -27,6 +27,3 @@ Two cards of the same value (e.g.: 7, 7).
 
 High Card
 If a Poker hand contains none of the above combinations, it's valued by the highest card in it.
-
-
-"Poker - \u00a9 2015 cmoud94\u2122"
