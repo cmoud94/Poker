@@ -256,6 +256,7 @@ public class Server implements Runnable {
                     // TODO: Potrebuje otestovat
                     for (Player player : this.getGame().getPlayers()) {
                         if (player.getName().equals(playerName)) {
+                            System.out.println("[Server] Not possible to have two players with the same name!");
                             break;
                         }
                     }

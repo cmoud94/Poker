@@ -24,19 +24,19 @@ public class GamePanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
-    private final Client client;
+    private static Client client;
 
     private static List<JLabel> chips;
+
+    private static JSlider slider;
 
     // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
     private final int cardWidth = 50;
 
     private final int cardHeight = 72;
 
-    private static JSlider slider;
-
     public GamePanel(int x, int y, int width, int height, Client client) {
-        this.client = client;
+        GamePanel.client = client;
         chips = new ArrayList<>();
 
         this.setBounds(x, y, width, height);
@@ -46,7 +46,7 @@ public class GamePanel extends JPanel {
         this.initComponents(40);
     }
 
-    public Client getClient() {
+    public static Client getClient() {
         return client;
     }
 
@@ -149,15 +149,19 @@ public class GamePanel extends JPanel {
             switch (actionEvent.getActionCommand()) {
                 case "fold":
                     System.out.println("[GamePanel] fold triggered");
+                    getClient().sendMessage(Utils.getObjectAsBytes("fold"));
                     break;
                 case "call":
                     System.out.println("[GamePanel] call triggered");
+                    getClient().sendMessage(Utils.getObjectAsBytes("call"));
                     break;
                 case "bet":
                     System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
+                    getClient().sendMessage(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
                     break;
                 case "all-in":
                     System.out.println("[GamePanel] all-in triggered");
+                    getClient().sendMessage(Utils.getObjectAsBytes("all-in"));
                     break;
                 default:
                     break;

@@ -291,6 +291,7 @@ public class Client implements Runnable {
 
             if (((Player) object).getName().equals(this.getName())) {
                 this.setPlayer((Player) object);
+                System.out.println("\t Name: " + this.getPlayer().getName() + " money: " + this.getPlayer().getMoney());
             }
 
         }
