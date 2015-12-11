@@ -13,6 +13,10 @@ import poker.game.Deck;
 import poker.utils.Utils;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,19 +26,18 @@ public class GamePanel extends JPanel {
 
     private final Client client;
 
-    private static List<JLabel> buttons;
+    private static List<JLabel> chips;
 
     // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
     private final int cardWidth = 50;
 
     private final int cardHeight = 72;
 
-    public static GamePanel gamePanel;
+    private static JSlider slider;
 
     public GamePanel(int x, int y, int width, int height, Client client) {
         this.client = client;
-        buttons = new ArrayList<>();
-        gamePanel = this;
+        chips = new ArrayList<>();
 
         this.setBounds(x, y, width, height);
         this.setLayout(null);
@@ -47,8 +50,8 @@ public class GamePanel extends JPanel {
         return client;
     }
 
-    public void setButtonPosition(String name, int posX, int posY) {
-        for (JLabel button : buttons) {
+    public void setChipPosition(String name, int posX, int posY) {
+        for (JLabel button : chips) {
             if (button.getName().equals(name)) {
                 button.setLocation(posX - (button.getWidth() / 2), posY - (button.getHeight() / 2));
                 button.setVisible(true);
@@ -57,22 +60,53 @@ public class GamePanel extends JPanel {
     }
 
     private void initComponents(int chipSize) {
-        buttons.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
-        buttons.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
-        buttons.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
-        buttons.get(0).setName("DEALER");
-        buttons.get(1).setName("SMALL_BLIND");
-        buttons.get(2).setName("BIG_BLIND");
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
+        chips.get(0).setName("DEALER");
+        chips.get(1).setName("SMALL_BLIND");
+        chips.get(2).setName("BIG_BLIND");
 
-        for (JLabel button : buttons) {
+        for (JLabel button : chips) {
             button.setSize(chipSize, chipSize);
             button.setVisible(false);
             this.add(button);
         }
 
+        List<String> aa = new ArrayList<>();
+        aa.add("fold");
+        aa.add("call");
+        aa.add("bet");
+        aa.add("all-in");
+
+        this.showPlayerAvailableAction(aa, 500);
+
         JLabel background = new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/table_1.png"), this.getWidth(), this.getHeight()));
         background.setBounds(this.getInsets().left, this.getInsets().top, this.getWidth(), this.getHeight());
         this.add(background);
+    }
+
+    public void showPlayerAvailableAction(List<String> availableActions, int betLimit) {
+        int actionsPosX = 175;
+        int actionsPosY = this.getHeight() - 100;
+        int buttonWidth = 100;
+        int buttonHeight = 30;
+
+        for (int i = 0; i < availableActions.size(); i++) {
+            JButton button = new JButton(availableActions.get(i));
+            button.setActionCommand(button.getText());
+            button.setBounds(i * buttonWidth + actionsPosX + (i * 10), actionsPosY, buttonWidth, buttonHeight);
+            this.add(button);
+            button.addActionListener(new buttonPlayerActionsListener());
+        }
+
+        slider = new JSlider(JSlider.HORIZONTAL, 10, betLimit, 10);
+        slider.setBounds(this.getInsets().left, this.getHeight() - 60, this.getWidth(), 60);
+        slider.setOpaque(true);
+        slider.setMajorTickSpacing(10);
+        slider.setPaintTicks(true);
+        this.add(slider);
+        slider.addChangeListener(new bettingSliderChangeListener());
     }
 
     public void drawCommunityCards(List<Card> cards) {
@@ -106,6 +140,39 @@ public class GamePanel extends JPanel {
         JLabel cardBack = new JLabel(cardBackImage);
         cardBack.setBounds(75, 100 + 4 * cardHeight, cardWidth, cardHeight);
         this.add(cardBack);
+    }
+
+    public static class buttonPlayerActionsListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            switch (actionEvent.getActionCommand()) {
+                case "fold":
+                    System.out.println("[GamePanel] fold triggered");
+                    break;
+                case "call":
+                    System.out.println("[GamePanel] call triggered");
+                    break;
+                case "bet":
+                    System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
+                    break;
+                case "all-in":
+                    System.out.println("[GamePanel] all-in triggered");
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    public static class bettingSliderChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent changeEvent) {
+            if (slider.getValue() % 10 != 0) {
+                slider.setValue(Math.round(slider.getValue() / 10) * 10);
+            }
+        }
     }
 
 }

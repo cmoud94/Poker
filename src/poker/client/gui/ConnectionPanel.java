@@ -11,7 +11,6 @@ import poker.client.Client;
 import poker.utils.Utils;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -54,10 +53,11 @@ public class ConnectionPanel extends JPanel {
 
     public void serverDisconnected() {
         labelConnectionInfo.setText("[Server] Disconnected");
+        buttonConnect.setText("Connect");
     }
 
     public void clientConnected() {
-        labelConnectionInfo.setText("Conected " + getClient().getAddress() + ":" + getClient().getPort());
+        labelConnectionInfo.setText("Connected " + getClient().getAddress() + ":" + getClient().getPort());
     }
 
     public void clientDisconnected() {
@@ -71,7 +71,6 @@ public class ConnectionPanel extends JPanel {
 
         JLabel labelAddress = new JLabel("Address:port");
         labelAddress.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
-        labelAddress.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelAddress);
         posY += itemHeight;
 
@@ -82,7 +81,6 @@ public class ConnectionPanel extends JPanel {
 
         JLabel labelName = new JLabel("Name");
         labelName.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
-        labelName.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelName);
         posY += itemHeight;
 
@@ -99,19 +97,16 @@ public class ConnectionPanel extends JPanel {
 
         JLabel labelStatus = new JLabel("Connection status", JLabel.CENTER);
         labelStatus.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
-        labelStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelStatus);
         posY += itemHeight;
 
         labelConnectionInfo = new JLabel("", JLabel.CENTER);
         labelConnectionInfo.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
-        labelConnectionInfo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         this.add(labelConnectionInfo);
         posY += itemHeight;
 
         labelPlayerReady = new JLabel("Are you ready?", JLabel.CENTER);
         labelPlayerReady.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
-        labelPlayerReady.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
         labelPlayerReady.setVisible(false);
         this.add(labelPlayerReady);
         posY += itemHeight;

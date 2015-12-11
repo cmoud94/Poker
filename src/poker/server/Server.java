@@ -253,6 +253,12 @@ public class Server implements Runnable {
 
                 if (_key.isReadable()) {
                     String playerName = this.getClientName(_key);
+                    // TODO: Potrebuje otestovat
+                    for (Player player : this.getGame().getPlayers()) {
+                        if (player.getName().equals(playerName)) {
+                            break;
+                        }
+                    }
                     sc.register(this.getSelector(), SelectionKey.OP_READ, playerName);
                     this.getGame().getPlayers().add(new Player(playerName, this.getStartingMoney()));
                 }

@@ -203,7 +203,7 @@ public class Game implements Runnable {
 
     private void bettingLoop(boolean firstBetRound) {
         String action = "";
-        String availableActions;
+        List<String> availableActions;
         int money = 0;
         boolean again;
         boolean smallBlind = false;
@@ -219,7 +219,7 @@ public class Game implements Runnable {
                 }
 
                 if (this.getPlayers().get(i).isPlaying()) {
-                    availableActions = "Choose your action. (" + this.availableActions(this.getPlayers().get(i)) + ")";
+                    availableActions = this.availableActions(this.getPlayers().get(i));
 
                     if (firstBetRound) {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
@@ -424,16 +424,18 @@ public class Game implements Runnable {
         }
     }
 
-    private String availableActions(Player player) {
-        String ret = "fold";
+    private List<String> availableActions(Player player) {
+        List<String> ret = new ArrayList<>();
+        ret.add("fold");
 
         if (!player.isHasToCall()) {
-            ret += ", check";
+            ret.add("check");
         } else {
-            ret += ", call";
+            ret.add("call");
         }
 
-        ret += ", bet, all-in";
+        ret.add("bet");
+        ret.add("all-in");
 
         return ret;
     }

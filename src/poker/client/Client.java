@@ -25,6 +25,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
+import java.util.List;
 
 public class Client implements Runnable {
 
@@ -40,6 +41,8 @@ public class Client implements Runnable {
 
     private String name;
 
+    private Player player;
+
     private final ClientWindow window;
 
     public Client(ClientWindow window) {
@@ -49,6 +52,7 @@ public class Client implements Runnable {
         this.selector = null;
         this.buffSize = 8192;
         this.name = "default";
+        this.player = null;
         this.window = window;
     }
 
@@ -94,6 +98,14 @@ public class Client implements Runnable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(Player player) {
+        this.player = player;
     }
 
     public ClientWindow getWindow() {
@@ -254,6 +266,14 @@ public class Client implements Runnable {
                 this.getWindow().getConnectionPanel().serverReady();
             }
 
+        } else if (object instanceof List) {
+
+            System.out.println("\t" + object.toString());
+
+            if (this.getWindow() != null) {
+                this.getWindow().getGamePanel().showPlayerAvailableAction((List<String>) object, this.getPlayer().getMoney());
+            }
+
         } else if (object instanceof Table) {
 
             System.out.println("\tIn pot: " + ((Table) object).getPot());
@@ -268,6 +288,10 @@ public class Client implements Runnable {
 
             System.out.println("\tYour cards:");
             ((Player) object).printCards();
+
+            if (((Player) object).getName().equals(this.getName())) {
+                this.setPlayer((Player) object);
+            }
 
         }
     }
