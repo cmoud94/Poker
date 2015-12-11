@@ -1,11 +1,11 @@
-package poker.game;
-
 /**
  * Copyright (C) 2015 Marek Kouřil <marek.kouril.st@vsb.cz>
  * This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
  * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
  * You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
  */
+
+package poker.game;
 
 import poker.server.Server;
 import poker.utils.Utils;
@@ -72,7 +72,7 @@ public class Game implements Runnable {
         return null;
     }
 
-    public BufferedReader getBr() {
+    private BufferedReader getBr() {
         return br;
     }
 
@@ -84,7 +84,7 @@ public class Game implements Runnable {
         return table;
     }
 
-    public void setTable(Table table) {
+    private void setTable(Table table) {
         this.table = table;
     }
 
@@ -92,7 +92,7 @@ public class Game implements Runnable {
         return deck;
     }
 
-    public void setDeck(Deck deck) {
+    private void setDeck(Deck deck) {
         this.deck = deck;
     }
 
@@ -108,7 +108,7 @@ public class Game implements Runnable {
         return lastBet;
     }
 
-    public void setLastBet(int lastBet) {
+    private void setLastBet(int lastBet) {
         this.lastBet = lastBet;
     }
 
@@ -116,7 +116,7 @@ public class Game implements Runnable {
         return dealer;
     }
 
-    public void setDealer(int dealer) {
+    private void setDealer(int dealer) {
         this.dealer = dealer;
     }
 
@@ -124,7 +124,7 @@ public class Game implements Runnable {
         return activePlayers;
     }
 
-    public void setActivePlayers(int activePlayers) {
+    private void setActivePlayers(int activePlayers) {
         this.activePlayers = activePlayers;
     }
 
