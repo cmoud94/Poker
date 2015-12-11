@@ -192,7 +192,8 @@ public class Server implements Runnable {
             SocketChannel socketChannel = serverSocketChannel.accept();
             socketChannel.configureBlocking(false);
 
-            socketChannel.register(this.getSelector(), SelectionKey.OP_READ);
+            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE);
+            this.getPendingData().put(socketChannel, Utils.getObjectAsBytes("Hello world!"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -263,7 +264,7 @@ public class Server implements Runnable {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {
-            System.out.println("[Server] Received message: " + object);
+            System.out.println("[Server] Received message: " + object + " key.att: " + key.attachment());
         }
     }
 

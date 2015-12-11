@@ -184,15 +184,14 @@ public class Client implements Runnable {
             }
 
             socketChannel.configureBlocking(false);
-            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE);
-            this.getPendingData().put(socketChannel, Utils.getObjectAsBytes(this.getName()));
+            socketChannel.register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void read(SelectionKey key) {
-        System.out.println("[Client] Reading data");
+        System.out.println("[Client] Reading data from " + key.attachment());
 
         try {
             SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -453,6 +452,8 @@ public class Client implements Runnable {
                         break;
                     case "send":
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
+                        this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_WRITE);
+                        this.getPendingData().put(this.getSocketChannel(), Utils.getObjectAsBytes(action));
                         break;
                     default:
                         break;
