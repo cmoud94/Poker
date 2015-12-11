@@ -117,10 +117,11 @@ public class Client implements Runnable {
 
         try {
             this.setSelector(Selector.open());
+
             this.setSocketChannel(SocketChannel.open());
             this.getSocketChannel().configureBlocking(false);
 
-            this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_CONNECT);
+            this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_CONNECT, this.getName());
             this.getSocketChannel().connect(new InetSocketAddress(this.getAddress(), this.getPort()));
         } catch (IOException e) {
             e.printStackTrace();
@@ -146,9 +147,13 @@ public class Client implements Runnable {
 
                     if (key.isConnectable()) {
                         this.connect(key);
-                    } else if (key.isWritable()) {
+                    }
+
+                    if (key.isWritable()) {
                         this.write(key);
-                    } else if (key.isReadable()) {
+                    }
+
+                    if (key.isReadable()) {
                         this.read(key);
                     }
                 }
@@ -184,7 +189,8 @@ public class Client implements Runnable {
             }
 
             socketChannel.configureBlocking(false);
-            socketChannel.register(this.getSelector(), SelectionKey.OP_READ);
+            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE);
+            this.getPendingData().put(socketChannel, Utils.getObjectAsBytes(this.getName()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -250,6 +256,39 @@ public class Client implements Runnable {
         }
     }
 
+    @Override
+    public void run() {
+        this.clientLoop();
+    }
+
+    public void consoleLoop() {
+        String action;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        while (true) {
+            try {
+                action = br.readLine();
+
+                switch (action.trim()) {
+                    case "quit":
+                        this.closeConnection();
+                        System.exit(0);
+                        break;
+                    case "send":
+                        action = JOptionPane.showInputDialog("[Client] What you want to send?");
+                        this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_WRITE);
+                        this.getPendingData().put(this.getSocketChannel(), Utils.getObjectAsBytes(action));
+                        break;
+                    default:
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // TODO: Smazat
     /*public void connect(String address, int port) {
         this.setPort(port);
 
@@ -432,35 +471,4 @@ public class Client implements Runnable {
         }
     }*/
 
-    @Override
-    public void run() {
-        this.clientLoop();
-    }
-
-    public void consoleLoop() {
-        String action;
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        while (true) {
-            try {
-                action = br.readLine();
-
-                switch (action.trim()) {
-                    case "quit":
-                        this.closeConnection();
-                        System.exit(0);
-                        break;
-                    case "send":
-                        action = JOptionPane.showInputDialog("[Client] What you want to send?");
-                        this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_WRITE);
-                        this.getPendingData().put(this.getSocketChannel(), Utils.getObjectAsBytes(action));
-                        break;
-                    default:
-                        break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

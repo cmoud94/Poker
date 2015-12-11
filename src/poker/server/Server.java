@@ -157,9 +157,13 @@ public class Server implements Runnable {
 
                     if (key.isAcceptable()) {
                         this.accept(key);
-                    } else if (key.isWritable()) {
+                    }
+
+                    if (key.isWritable()) {
                         this.write(key);
-                    } else if (key.isReadable()) {
+                    }
+
+                    if (key.isReadable()) {
                         this.read(key);
                     }
                 }
@@ -192,15 +196,14 @@ public class Server implements Runnable {
             SocketChannel socketChannel = serverSocketChannel.accept();
             socketChannel.configureBlocking(false);
 
-            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE);
-            this.getPendingData().put(socketChannel, Utils.getObjectAsBytes("Hello world!"));
+            socketChannel.register(this.getSelector(), SelectionKey.OP_READ, "accept");
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     private void read(SelectionKey key) {
-        System.out.println("[Server] Reading data");
+        System.out.println("[Server] Reading data (" + key.attachment() + ")");
 
         try {
             SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -230,7 +233,7 @@ public class Server implements Runnable {
             readBuffer.get(data, 0, read);
 
             this.processData(key, data);
-            this.echo(key, data);
+            //this.echo(key, data);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -264,7 +267,42 @@ public class Server implements Runnable {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {
-            System.out.println("[Server] Received message: " + object + " key.att: " + key.attachment());
+            System.out.println("[Server] Received message: " + object + " (" + key.attachment() + ")");
+        }
+    }
+
+    @Override
+    public void run() {
+        this.serverLoop();
+    }
+
+    public void consoleLoop() {
+        String action;
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        while (true) {
+            try {
+                action = br.readLine();
+
+                switch (action.trim()) {
+                    case "quit":
+                        this.closeConnection();
+                        System.exit(0);
+                        break;
+                    case "send":
+                        /*String name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        action = JOptionPane.showInputDialog("[Server] Type your message.");
+                        this.sendData(name, Utils.getObjectAsBytes(action));*/
+                        break;
+                    case "broadcast":
+                        action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
+                        break;
+                    default:
+                        break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -306,10 +344,9 @@ public class Server implements Runnable {
         }
 
         return null;
-    }*/
+    }
 
-    // TODO: Smazat po implementaci noveho serveru
-    /*private void handleAccept(SelectionKey key) {
+    private void handleAccept(SelectionKey key) {
         try {
             SocketChannel sc = ((ServerSocketChannel) key.channel()).accept();
             sc.configureBlocking(false);
@@ -350,10 +387,9 @@ public class Server implements Runnable {
             this.setGameRunning(true);
             this.getGame().initGame();
         }
-    }*/
+    }
 
-    // TODO: Smazat po implementaci noveho serveru
-    /*private void handleRead(SelectionKey key) {
+    private void handleRead(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
         byte[] finalBytes = new byte[0];
@@ -391,9 +427,9 @@ public class Server implements Runnable {
                 e1.printStackTrace();
             }
         }
-    }*/
+    }
 
-    /*private void processData(String playerName, byte[] bytes) {
+    private void processData(String playerName, byte[] bytes) {
         Player player = this.getGame().getPlayerByPlayerName(playerName);
         Object object = Utils.getBytesAsObject(bytes);
 
@@ -422,10 +458,9 @@ public class Server implements Runnable {
                 System.out.println("[Server] Received message from " + player.getName() + " saying: " + this.getLastMessage());
             }
         }
-    }*/
+    }
 
-    // TODO: Smazat po implementaci noveho serveru
-    /*public void sendData(Player player, byte[] bytes) {
+    public void sendData(Player player, byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
@@ -443,7 +478,6 @@ public class Server implements Runnable {
         System.out.println("[Server] Data sent to " + player.getName());
     }
 
-    // TODO: Smazat po implementaci noveho serveru
     public void sendData(String name, byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
@@ -460,10 +494,9 @@ public class Server implements Runnable {
         }
 
         System.out.println("[Server] Data sent to " + name);
-    }*/
+    }
 
-    // TODO: Smazat po implementaci noveho serveru
-    /*public void broadcastData(byte[] bytes) {
+    public void broadcastData(byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
@@ -481,38 +514,4 @@ public class Server implements Runnable {
         System.out.println("[Server] Broadcast sent");
     }*/
 
-    @Override
-    public void run() {
-        this.serverLoop();
-    }
-
-    public void consoleLoop() {
-        String action;
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-
-        while (true) {
-            try {
-                action = br.readLine();
-
-                switch (action.trim()) {
-                    case "quit":
-                        this.closeConnection();
-                        System.exit(0);
-                        break;
-                    case "send":
-                        /*String name = JOptionPane.showInputDialog("[Server] Type player's name.");
-                        action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.sendData(name, Utils.getObjectAsBytes(action));*/
-                        break;
-                    case "broadcast":
-                        action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
-                        break;
-                    default:
-                        break;
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
