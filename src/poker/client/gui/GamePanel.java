@@ -22,13 +22,19 @@ public class GamePanel extends JPanel {
 
     private final Client client;
 
-    private static JLabel background;
-
     private static List<JLabel> buttons;
+
+    // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
+    private final int cardWidth = 50;
+
+    private final int cardHeight = 72;
+
+    public static GamePanel gamePanel;
 
     public GamePanel(int x, int y, int width, int height, Client client) {
         this.client = client;
         buttons = new ArrayList<>();
+        gamePanel = this;
 
         this.setBounds(x, y, width, height);
         this.setLayout(null);
@@ -64,43 +70,46 @@ public class GamePanel extends JPanel {
             this.add(button);
         }
 
-        // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
-        int width = 50;
-        int height = 72;
-        List<JLabel> cards = new ArrayList<>();
+        JLabel background = new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/table_1.png"), this.getWidth(), this.getHeight()));
+        background.setBounds(this.getInsets().left, this.getInsets().top, this.getWidth(), this.getHeight());
+        this.add(background);
+    }
+
+    public void drawCommunityCards(List<Card> cards) {
+        //List<JLabel> labels = new ArrayList<>();
+        int communityCardsPosX = 250;
+        int communityCardsPosY = 200;
+
+        for (int i = 0; i < cards.size(); i++) {
+            JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(cards.get(i).getCardImage(), cardWidth, cardHeight));
+            label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
+            //labels.add(label);
+            this.add(label);
+        }
+    }
+
+    public void drawAllCards() {
+        //List<JLabel> cards = new ArrayList<>();
         Deck deck = new Deck();
+        ImageIcon cardBackImage = null;
 
         for (int i = 0; i < Card.getSuits().length; i++) {
             for (int j = 0; j < Card.getRanks().length; j++) {
-                cards.add(new JLabel(Utils.getScaledImageAsImageIcon(deck.dealCard().getCardImage(), width, height)));
-                cards.get(cards.size() - 1).setBounds(j * width + 75, i * height + 100, width, height);
-                this.add(cards.get(cards.size() - 1));
+                Card card = deck.dealCard();
+                JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(card.getCardImage(), cardWidth, cardHeight));
+                label.setBounds(j * cardWidth + 75, i * cardHeight + 100, cardWidth, cardHeight);
+                //cards.add(label);
+                this.add(label);
+
+                if (cardBackImage == null) {
+                    cardBackImage = Utils.getScaledImageAsImageIcon(card.getCardBackImage(), cardWidth, cardHeight);
+                }
             }
         }
 
-        /*ImageIcon cardBackImage = Utils.getScaledImageAsImageIcon(Utils.getSubImage(cards, 0, 724, 125, 181), width, height);
         JLabel cardBack = new JLabel(cardBackImage);
-        cardBack.setBounds(200, 150, width, height);
-        this.add(cardBack);*/
-
-        /*dealerButton = new JLabel(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png", chipSize, chipSize));
-        dealerButton.setName("DEALER");
-        dealerButton.setSize(chipSize, chipSize);
-        this.add(dealerButton);
-
-        smallBlindButton = new JLabel(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png", chipSize, chipSize));
-        smallBlindButton.setName("SMALL_BLIND");
-        smallBlindButton.setSize(chipSize, chipSize);
-        this.add(smallBlindButton);
-
-        bigBlindButton = new JLabel(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png", chipSize, chipSize));
-        bigBlindButton.setName("BIG_BLIND");
-        bigBlindButton.setSize(chipSize, chipSize);
-        this.add(bigBlindButton);*/
-
-        background = new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/table_1.png"), this.getWidth(), this.getHeight()));
-        background.setBounds(this.getInsets().left, this.getInsets().top, this.getWidth(), this.getHeight());
-        this.add(background);
+        cardBack.setBounds(75, 100 + 4 * cardHeight, cardWidth, cardHeight);
+        this.add(cardBack);
     }
 
 }
