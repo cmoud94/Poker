@@ -161,19 +161,18 @@ public class Server implements Runnable {
                     iterator.remove();
 
                     if (!key.isValid()) {
+                        System.out.println("[Server] Invalid key");
                         continue;
                     }
 
-                    if (key.isConnectable()) {
-                        System.out.println("[Server] Connectable");
-                    } else if (key.isAcceptable()) {
+                    if (key.isAcceptable()) {
+                        System.out.println("[Server] Acceptable");
                         this.handleAccept(key);
                     } else if (key.isReadable()) {
+                        System.out.println("[Server] Readable");
                         this.handleRead(key);
                     } else if (key.isWritable()) {
                         System.out.println("[Server] Writeable");
-                    } else {
-                        System.out.println("[Server] Nothing to do...");
                     }
                 }
             }
@@ -261,7 +260,10 @@ public class Server implements Runnable {
                         }
                     }
                     sc.register(this.getSelector(), SelectionKey.OP_READ, playerName);
-                    this.getGame().getPlayers().add(new Player(playerName, this.getStartingMoney()));
+
+                    Player player = new Player(playerName, this.getStartingMoney());
+                    this.getGame().getPlayers().add(player);
+                    this.sendData(player, Utils.getObjectAsBytes(player));
                 }
             }
         } catch (IOException e) {
@@ -417,9 +419,14 @@ public class Server implements Runnable {
                         this.stopServer();
                         break;
                     case "send":
-                        String name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        /*String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.sendData(name, Utils.getObjectAsBytes(action));
+                        this.sendData(name, Utils.getObjectAsBytes(action));*/
+
+                        for (int i = 0; i < 5; i++) {
+                            this.sendData("Player_1", Utils.getObjectAsBytes(i + ". Hello world!"));
+                        }
+
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");

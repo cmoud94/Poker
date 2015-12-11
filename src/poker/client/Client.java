@@ -22,7 +22,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.List;
@@ -162,19 +161,17 @@ public class Client implements Runnable {
                         iterator.remove();
 
                         if (!key.isValid()) {
+                            System.out.println("[Client] Invalid key");
                             continue;
                         }
 
                         if (key.isConnectable()) {
                             System.out.println("[Client] Connectable.");
-                        } else if (key.isAcceptable()) {
-                            this.handleAccept(key);
                         } else if (key.isReadable()) {
+                            System.out.println("[Client] Readable.");
                             this.handleRead(key);
                         } else if (key.isWritable()) {
                             System.out.println("[Client] Writeable.");
-                        } else {
-                            System.out.println("[Client] Nothing to do...");
                         }
                     }
                 } catch (IOException e) {
@@ -197,18 +194,6 @@ public class Client implements Runnable {
                 this.getWindow().getConnectionPanel().clientDisconnected();
             }
         }
-    }
-
-    private void handleAccept(SelectionKey key) {
-        try {
-            SocketChannel sc = ((ServerSocketChannel) key.channel()).accept();
-            sc.configureBlocking(false);
-            sc.register(this.getSelector(), SelectionKey.OP_READ);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("[Client] Connected to server");
     }
 
     private void handleRead(SelectionKey key) {
@@ -285,13 +270,11 @@ public class Client implements Runnable {
             }
 
         } else if (object instanceof Player) {
-
-            System.out.println("\tYour cards:");
-            ((Player) object).printCards();
-
             if (((Player) object).getName().equals(this.getName())) {
                 this.setPlayer((Player) object);
-                System.out.println("\t Name: " + this.getPlayer().getName() + " money: " + this.getPlayer().getMoney());
+                System.out.println("\tName: " + this.getPlayer().getName() + " money: " + this.getPlayer().getMoney());
+                System.out.println("\tYour cards:");
+                this.getPlayer().printCards();
             }
 
         }

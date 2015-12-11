@@ -29,6 +29,7 @@ public class RunServer {
             server.startServer();
 
             thread.start();
+
             server.consoleLoop();
         }
     }
