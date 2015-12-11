@@ -9,32 +9,32 @@ package poker.client;
 
 import poker.client.gui.ClientWindow;
 import poker.game.Player;
-import poker.game.Table;
 import poker.utils.Utils;
 
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
 public class Client implements Runnable {
 
-    private InetSocketAddress address;
+    private final String address;
 
-    private int port;
+    private final int port;
 
-    private SocketChannel sc;
+    private SocketChannel socketChannel;
 
     private Selector selector;
+
+    private Map<SocketChannel, byte[]> pendingData;
 
     private final int buffSize;
 
@@ -44,39 +44,32 @@ public class Client implements Runnable {
 
     private final ClientWindow window;
 
-    public Client(ClientWindow window) {
-        this.address = null;
-        this.port = 0;
-        this.sc = null;
+    public Client(ClientWindow window, String address, int port) {
+        this.address = address;
+        this.port = port;
+        this.socketChannel = null;
         this.selector = null;
+        this.pendingData = new HashMap<>();
         this.buffSize = 8192;
         this.name = "default";
         this.player = null;
         this.window = window;
     }
 
-    public InetSocketAddress getAddress() {
+    public String getAddress() {
         return address;
-    }
-
-    public void setAddress(InetSocketAddress address) {
-        this.address = address;
     }
 
     public int getPort() {
         return port;
     }
 
-    public void setPort(int port) {
-        this.port = port;
+    public SocketChannel getSocketChannel() {
+        return socketChannel;
     }
 
-    public SocketChannel getSc() {
-        return sc;
-    }
-
-    public void setSc(SocketChannel sc) {
-        this.sc = sc;
+    public void setSocketChannel(SocketChannel socketChannel) {
+        this.socketChannel = socketChannel;
     }
 
     public Selector getSelector() {
@@ -85,6 +78,10 @@ public class Client implements Runnable {
 
     public void setSelector(Selector selector) {
         this.selector = selector;
+    }
+
+    public Map<SocketChannel, byte[]> getPendingData() {
+        return pendingData;
     }
 
     public int getBuffSize() {
@@ -111,7 +108,150 @@ public class Client implements Runnable {
         return window;
     }
 
-    public void connect(String address, int port) {
+    public void init() {
+        System.out.println("[Client] Initializing client");
+
+        if (this.getSocketChannel() != null || this.getSelector() != null) {
+            return;
+        }
+
+        try {
+            this.setSelector(Selector.open());
+            this.setSocketChannel(SocketChannel.open());
+            this.getSocketChannel().configureBlocking(false);
+
+            this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_CONNECT);
+            this.getSocketChannel().connect(new InetSocketAddress(this.getAddress(), this.getPort()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void clientLoop() {
+        System.out.println("[Client] Entering main loop");
+
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                this.getSelector().select(1000);
+
+                Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
+
+                while (keys.hasNext()) {
+                    SelectionKey key = keys.next();
+                    keys.remove();
+
+                    if (!key.isValid()) {
+                        continue;
+                    }
+
+                    if (key.isConnectable()) {
+                        this.connect(key);
+                    } else if (key.isWritable()) {
+                        this.write(key);
+                    } else if (key.isReadable()) {
+                        this.read(key);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            this.closeConnection();
+        }
+    }
+
+    public void closeConnection() {
+        System.out.println("[Client] Closing connection");
+        if (this.getSelector() != null) {
+            try {
+                //this.getSelector().close();
+                this.getSocketChannel().socket().close();
+                this.getSocketChannel().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void connect(SelectionKey key) {
+        System.out.println("[Client] Connected");
+
+        try {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+
+            if (socketChannel.isConnectionPending()) {
+                socketChannel.finishConnect();
+            }
+
+            socketChannel.configureBlocking(false);
+            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE);
+            this.getPendingData().put(socketChannel, Utils.getObjectAsBytes(this.getName()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void read(SelectionKey key) {
+        System.out.println("[Client] Reading data");
+
+        try {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+            ByteBuffer readBuffer = ByteBuffer.allocate(this.getBuffSize());
+            int read;
+
+            readBuffer.clear();
+
+            try {
+                read = socketChannel.read(readBuffer);
+            } catch (IOException e) {
+                System.out.println("[Client] Problem with data read");
+                key.cancel();
+                socketChannel.close();
+                return;
+            }
+
+            if (read == -1) {
+                System.out.println("[Client] Nothing to read, closing connection");
+                key.cancel();
+                socketChannel.close();
+                return;
+            }
+
+            readBuffer.flip();
+            byte[] data = new byte[this.getBuffSize()];
+            readBuffer.get(data, 0, read);
+
+            this.processData(key, data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void write(SelectionKey key) {
+        System.out.println("[Client] Writing data");
+
+        try {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+            byte[] data = this.getPendingData().get(socketChannel);
+            this.getPendingData().remove(socketChannel);
+
+            socketChannel.write(ByteBuffer.wrap(data));
+
+            key.interestOps(SelectionKey.OP_READ);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void processData(SelectionKey key, byte[] data) {
+        Object object = Utils.getBytesAsObject(data);
+
+        if (object instanceof String) {
+            System.out.println("[Client] Received message: " + object);
+        }
+    }
+
+    /*public void connect(String address, int port) {
         this.setPort(port);
 
         try {
@@ -291,7 +431,7 @@ public class Client implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     @Override
     public void run() {
@@ -308,12 +448,11 @@ public class Client implements Runnable {
 
                 switch (action.trim()) {
                     case "quit":
-                        this.disconnect();
+                        this.closeConnection();
                         System.exit(0);
                         break;
                     case "send":
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
-                        this.sendMessage(Utils.getObjectAsBytes(action));
                         break;
                     default:
                         break;

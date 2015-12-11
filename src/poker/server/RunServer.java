@@ -26,7 +26,7 @@ public class RunServer {
             Server server = new Server(port, numOfPlayers, bigBlind, startingMoney);
             Thread thread = new Thread(server, "serverLoop");
 
-            server.startServer();
+            server.init();
 
             thread.start();
 

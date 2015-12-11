@@ -8,7 +8,6 @@
 package poker.server;
 
 import poker.game.Game;
-import poker.game.Player;
 import poker.utils.Utils;
 
 import javax.swing.*;
@@ -17,16 +16,23 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class Server implements Runnable {
 
     private final int port;
 
-    private ServerSocketChannel ssc;
+    private ServerSocketChannel serverSocketChannel;
 
     private Selector selector;
+
+    private Map<SocketChannel, byte[]> pendingData;
 
     private final int buffSize;
 
@@ -42,33 +48,27 @@ public class Server implements Runnable {
 
     public Server(int port, int numOfPlayers, int bigBlind, int startingMoney) {
         this.port = port;
-        this.ssc = null;
+        this.serverSocketChannel = null;
         this.selector = null;
+        this.pendingData = new HashMap<>();
         this.buffSize = 8192;
         this.serverRunning = false;
         this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
         this.gameRunning = false;
         this.lastMessage = "";
-
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
-                | UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
     }
 
     public int getPort() {
         return port;
     }
 
-    public ServerSocketChannel getSsc() {
-        return ssc;
+    public ServerSocketChannel getServerSocketChannel() {
+        return serverSocketChannel;
     }
 
-    public void setSsc(ServerSocketChannel ssc) {
-        this.ssc = ssc;
+    public void setServerSocketChannel(ServerSocketChannel serverSocketChannel) {
+        this.serverSocketChannel = serverSocketChannel;
     }
 
     public Selector getSelector() {
@@ -77,6 +77,10 @@ public class Server implements Runnable {
 
     public void setSelector(Selector selector) {
         this.selector = selector;
+    }
+
+    public Map<SocketChannel, byte[]> getPendingData() {
+        return pendingData;
     }
 
     public int getBuffSize() {
@@ -115,86 +119,156 @@ public class Server implements Runnable {
         this.lastMessage = lastMessage;
     }
 
-    public void startServer() {
-        InetSocketAddress address = new InetSocketAddress(this.getPort());
+    public void init() {
+        System.out.println("[Server] Starting at port " + this.getPort() + " for " + this.getGame().getNumOfPlayers() + " players with Big Blind " + this.getGame().getBigBlind());
+
+        if (this.getServerSocketChannel() != null || this.getSelector() != null) {
+            return;
+        }
 
         try {
-            this.setSsc(ServerSocketChannel.open());
-            this.getSsc().configureBlocking(false);
-            this.getSsc().socket().bind(address);
-
             this.setSelector(Selector.open());
+            this.setServerSocketChannel(ServerSocketChannel.open());
+            this.getServerSocketChannel().configureBlocking(false);
+            this.getServerSocketChannel().socket().bind(new InetSocketAddress(this.getPort()));
+
+            this.getServerSocketChannel().register(this.getSelector(), SelectionKey.OP_ACCEPT);
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        if (this.getSsc().isOpen()) {
-            System.out.println("[Server] Starting at port " + this.getPort() + " for " + this.getGame().getNumOfPlayers() + " players with Big Blind " + this.getGame().getBigBlind());
-        }
-
-        try {
-            this.getSsc().register(this.getSelector(), SelectionKey.OP_ACCEPT);
-            this.setServerRunning(true);
-        } catch (ClosedChannelException e) {
             e.printStackTrace();
         }
     }
 
     public void serverLoop() {
-        if (this.getSsc().isOpen() && this.isServerRunning()) {
-            System.out.println("[Server] Waiting for clients...");
+        System.out.println("[Server] Waiting for clients");
 
-            Iterator<SelectionKey> iterator;
-            SelectionKey key;
+        try {
+            while (!Thread.currentThread().isInterrupted()) {
+                this.getSelector().select(10000);
 
-            while (this.getSsc().isOpen()) {
-                try {
-                    this.getSelector().select();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
-                iterator = this.getSelector().selectedKeys().iterator();
-
-                while (iterator.hasNext()) {
-                    key = iterator.next();
-                    iterator.remove();
+                while (keys.hasNext()) {
+                    SelectionKey key = keys.next();
+                    keys.remove();
 
                     if (!key.isValid()) {
-                        System.out.println("[Server] Invalid key");
                         continue;
                     }
 
                     if (key.isAcceptable()) {
-                        System.out.println("[Server] Acceptable");
-                        this.handleAccept(key);
-                    } else if (key.isReadable()) {
-                        System.out.println("[Server] Readable");
-                        this.handleRead(key);
+                        this.accept(key);
                     } else if (key.isWritable()) {
-                        System.out.println("[Server] Writeable");
+                        this.write(key);
+                    } else if (key.isReadable()) {
+                        this.read(key);
                     }
                 }
             }
-        } else {
-            Thread.currentThread().interrupt();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            this.closeConnection();
         }
     }
 
-    public void stopServer() {
+    public void closeConnection() {
+        System.out.println("[Server] Closing connection");
+        if (this.getSelector() != null) {
+            try {
+                //this.getSelector().close();
+                this.getServerSocketChannel().socket().close();
+                this.getServerSocketChannel().close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void accept(SelectionKey key) {
+        System.out.println("[Server] Client accepted");
+
         try {
-            //this.getSelector().close();
-            this.getSsc().close();
-            this.setServerRunning(false);
+            ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
+            SocketChannel socketChannel = serverSocketChannel.accept();
+            socketChannel.configureBlocking(false);
+
+            socketChannel.register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        System.out.println("[Server] Stopped");
-        System.exit(0);
     }
 
-    private String getClientName(SelectionKey key) {
+    private void read(SelectionKey key) {
+        System.out.println("[Server] Reading data");
+
+        try {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+            ByteBuffer readBuffer = ByteBuffer.allocate(this.getBuffSize());
+            int read;
+
+            readBuffer.clear();
+
+            try {
+                read = socketChannel.read(readBuffer);
+            } catch (IOException e) {
+                System.out.println("[Server] Problem with data read");
+                key.cancel();
+                socketChannel.close();
+                return;
+            }
+
+            if (read == -1) {
+                System.out.println("[Server] Nothing to read, closing connection");
+                key.cancel();
+                socketChannel.close();
+                return;
+            }
+
+            readBuffer.flip();
+            byte[] data = new byte[this.getBuffSize()];
+            readBuffer.get(data, 0, read);
+
+            this.processData(key, data);
+            this.echo(key, data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void write(SelectionKey key) {
+        System.out.println("[Server] Writing data");
+
+        try {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
+            byte[] data = this.getPendingData().get(socketChannel);
+            this.getPendingData().remove(socketChannel);
+
+            socketChannel.write(ByteBuffer.wrap(data));
+
+            key.interestOps(SelectionKey.OP_READ);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void echo(SelectionKey key, byte[] data) {
+        System.out.println("[Server] Echoing data");
+
+        SocketChannel socketChannel = (SocketChannel) key.channel();
+        this.getPendingData().put(socketChannel, data);
+        key.interestOps(SelectionKey.OP_WRITE);
+    }
+
+    private void processData(SelectionKey key, byte[] data) {
+        Object object = Utils.getBytesAsObject(data);
+
+        if (object instanceof String) {
+            System.out.println("[Server] Received message: " + object);
+        }
+    }
+
+    // TODO: Smazat po implementaci noveho serveru
+    /*private String getClientName(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
         String name = "";
@@ -231,9 +305,10 @@ public class Server implements Runnable {
         }
 
         return null;
-    }
+    }*/
 
-    private void handleAccept(SelectionKey key) {
+    // TODO: Smazat po implementaci noveho serveru
+    /*private void handleAccept(SelectionKey key) {
         try {
             SocketChannel sc = ((ServerSocketChannel) key.channel()).accept();
             sc.configureBlocking(false);
@@ -274,9 +349,10 @@ public class Server implements Runnable {
             this.setGameRunning(true);
             this.getGame().initGame();
         }
-    }
+    }*/
 
-    private void handleRead(SelectionKey key) {
+    // TODO: Smazat po implementaci noveho serveru
+    /*private void handleRead(SelectionKey key) {
         SocketChannel sc = (SocketChannel) key.channel();
         ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
         byte[] finalBytes = new byte[0];
@@ -314,9 +390,9 @@ public class Server implements Runnable {
                 e1.printStackTrace();
             }
         }
-    }
+    }*/
 
-    private void processData(String playerName, byte[] bytes) {
+    /*private void processData(String playerName, byte[] bytes) {
         Player player = this.getGame().getPlayerByPlayerName(playerName);
         Object object = Utils.getBytesAsObject(bytes);
 
@@ -345,9 +421,10 @@ public class Server implements Runnable {
                 System.out.println("[Server] Received message from " + player.getName() + " saying: " + this.getLastMessage());
             }
         }
-    }
+    }*/
 
-    public void sendData(Player player, byte[] bytes) {
+    // TODO: Smazat po implementaci noveho serveru
+    /*public void sendData(Player player, byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
@@ -365,6 +442,7 @@ public class Server implements Runnable {
         System.out.println("[Server] Data sent to " + player.getName());
     }
 
+    // TODO: Smazat po implementaci noveho serveru
     public void sendData(String name, byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
@@ -381,9 +459,10 @@ public class Server implements Runnable {
         }
 
         System.out.println("[Server] Data sent to " + name);
-    }
+    }*/
 
-    public void broadcastData(byte[] bytes) {
+    // TODO: Smazat po implementaci noveho serveru
+    /*public void broadcastData(byte[] bytes) {
         try {
             ByteBuffer buffer = ByteBuffer.wrap(bytes);
 
@@ -399,7 +478,7 @@ public class Server implements Runnable {
         }
 
         System.out.println("[Server] Broadcast sent");
-    }
+    }*/
 
     @Override
     public void run() {
@@ -416,21 +495,16 @@ public class Server implements Runnable {
 
                 switch (action.trim()) {
                     case "quit":
-                        this.stopServer();
+                        this.closeConnection();
+                        System.exit(0);
                         break;
                     case "send":
                         /*String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
                         this.sendData(name, Utils.getObjectAsBytes(action));*/
-
-                        for (int i = 0; i < 5; i++) {
-                            this.sendData("Player_1", Utils.getObjectAsBytes(i + ". Hello world!"));
-                        }
-
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
-                        this.broadcastData(Utils.getObjectAsBytes(action));
                         break;
                     default:
                         break;

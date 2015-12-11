@@ -8,7 +8,6 @@
 package poker.client.gui;
 
 import poker.client.Client;
-import poker.utils.Utils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -134,14 +133,14 @@ public class ConnectionPanel extends JPanel {
                 System.out.println("\tAddress: " + address + " port: " + port);
                 System.out.println("\tPlayer name: " + getClient().getName());
 
-                getClient().connect(address, port);
+                //getClient().connect(address, port);
                 buttonConnect.setText("Disconnect");
                 labelConnectionInfo.setText(getClient().getName() + "@" + address + ":" + port);
 
                 Thread clientLoop = new Thread(getClient(), "clientLoop");
                 clientLoop.start();
             } else if (buttonConnect.getText().equals("Disconnect")) {
-                getClient().disconnect();
+                //getClient().disconnect();
                 buttonConnect.setText("Connect");
             } else {
                 JOptionPane.showMessageDialog(null, "Input the name and address in the right format.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -153,7 +152,7 @@ public class ConnectionPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            getClient().sendMessage(Utils.getObjectAsBytes("yes"));
+            //getClient().sendMessage(Utils.getObjectAsBytes("yes"));
             labelPlayerReady.setVisible(false);
             buttonReady.setVisible(false);
         }

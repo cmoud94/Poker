@@ -20,14 +20,13 @@ public class ClientWindow {
 
     private GamePanel gamePanel;
 
-    private final Client client;
+    private final Client client = null; // TODO: Opravit
 
     private final int WIDTH = 1000;
 
     private final int HEIGHT = 600;
 
     public ClientWindow() {
-        this.client = new Client(this);
         initialize();
     }
 

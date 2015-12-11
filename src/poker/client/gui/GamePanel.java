@@ -149,19 +149,19 @@ public class GamePanel extends JPanel {
             switch (actionEvent.getActionCommand()) {
                 case "fold":
                     System.out.println("[GamePanel] fold triggered");
-                    getClient().sendMessage(Utils.getObjectAsBytes("fold"));
+                    //getClient().sendMessage(Utils.getObjectAsBytes("fold"));
                     break;
                 case "call":
                     System.out.println("[GamePanel] call triggered");
-                    getClient().sendMessage(Utils.getObjectAsBytes("call"));
+                    //getClient().sendMessage(Utils.getObjectAsBytes("call"));
                     break;
                 case "bet":
                     System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
-                    getClient().sendMessage(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
+                    //getClient().sendMessage(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
                     break;
                 case "all-in":
                     System.out.println("[GamePanel] all-in triggered");
-                    getClient().sendMessage(Utils.getObjectAsBytes("all-in"));
+                    //getClient().sendMessage(Utils.getObjectAsBytes("all-in"));
                     break;
                 default:
                     break;

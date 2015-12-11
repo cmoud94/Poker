@@ -10,13 +10,15 @@ package poker.client;
 public class RunClient {
 
     public static void main(String[] args) {
-        Client client = new Client(null);
+        Client client = new Client(null, "localhost", 9999);
         Thread thread = new Thread(client, "clientLoop");
 
         client.setName("Player_1");
-        client.connect("localhost", 9999);
+
+        client.init();
 
         thread.start();
+
         client.consoleLoop();
     }
 
