@@ -8,6 +8,7 @@ package poker.client.gui;
  */
 
 import poker.client.Client;
+import poker.utils.Utils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +27,12 @@ public class ConnectionPanel extends JPanel {
 
     private static JButton buttonConnect;
 
+    private static JLabel labelConnectionInfo;
+
+    private static JLabel labelPlayerReady;
+
+    private static JButton buttonReady;
+
     public ConnectionPanel(int x, int y, int width, int height, Client client) {
         ConnectionPanel.client = client;
 
@@ -38,6 +45,23 @@ public class ConnectionPanel extends JPanel {
 
     private static Client getClient() {
         return client;
+    }
+
+    public void serverReady() {
+        labelPlayerReady.setVisible(true);
+        buttonReady.setVisible(true);
+    }
+
+    public void serverDisconnected() {
+        labelConnectionInfo.setText("[Server] Disconnected");
+    }
+
+    public void clientConnected() {
+        labelConnectionInfo.setText("Conected " + getClient().getAddress() + ":" + getClient().getPort());
+    }
+
+    public void clientDisconnected() {
+        labelConnectionInfo.setText("[Client] Disconnected");
     }
 
     private void initComponents() {
@@ -79,10 +103,24 @@ public class ConnectionPanel extends JPanel {
         this.add(labelStatus);
         posY += itemHeight;
 
-        JLabel labelConnStatus = new JLabel("", JLabel.CENTER);
-        labelConnStatus.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
-        labelConnStatus.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
-        this.add(labelConnStatus);
+        labelConnectionInfo = new JLabel("", JLabel.CENTER);
+        labelConnectionInfo.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
+        labelConnectionInfo.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        this.add(labelConnectionInfo);
+        posY += itemHeight;
+
+        labelPlayerReady = new JLabel("Are you ready?", JLabel.CENTER);
+        labelPlayerReady.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
+        labelPlayerReady.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
+        labelPlayerReady.setVisible(false);
+        this.add(labelPlayerReady);
+        posY += itemHeight;
+
+        buttonReady = new JButton("Ready");
+        buttonReady.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
+        buttonReady.setVisible(false);
+        this.add(buttonReady);
+        buttonReady.addActionListener(new buttonReadyAction());
     }
 
     private static class buttonConnectAction implements ActionListener {
@@ -95,7 +133,7 @@ public class ConnectionPanel extends JPanel {
                 getClient().setName(textFieldName.getText().trim());
 
                 String address = textFieldAddress.getText().trim();
-                int port = Integer.parseInt(address.substring((address.indexOf(':') + 1), (address.length() - 1)));
+                int port = Integer.parseInt(address.substring((address.indexOf(':') + 1), address.length()));
                 address = address.substring(0, address.indexOf(':'));
 
                 System.out.println("\tAddress: " + address + " port: " + port);
@@ -103,14 +141,26 @@ public class ConnectionPanel extends JPanel {
 
                 getClient().connect(address, port);
                 buttonConnect.setText("Disconnect");
+                labelConnectionInfo.setText(getClient().getName() + "@" + address + ":" + port);
+
+                Thread clientLoop = new Thread(getClient(), "clientLoop");
+                clientLoop.start();
+            } else if (buttonConnect.getText().equals("Disconnect")) {
+                getClient().disconnect();
+                buttonConnect.setText("Connect");
             } else {
                 JOptionPane.showMessageDialog(null, "Input the name and address in the right format.", "Error", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
 
-            if (buttonConnect.getText().equals("Disconnect")) {
-                getClient().disconnect();
-                buttonConnect.setText("Connect");
-            }
+    private static class buttonReadyAction implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent actionEvent) {
+            getClient().sendMessage(Utils.getObjectAsBytes("yes"));
+            labelPlayerReady.setVisible(false);
+            buttonReady.setVisible(false);
         }
     }
 

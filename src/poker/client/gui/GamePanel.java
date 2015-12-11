@@ -76,20 +76,17 @@ public class GamePanel extends JPanel {
     }
 
     public void drawCommunityCards(List<Card> cards) {
-        //List<JLabel> labels = new ArrayList<>();
         int communityCardsPosX = 250;
         int communityCardsPosY = 200;
 
         for (int i = 0; i < cards.size(); i++) {
             JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(cards.get(i).getCardImage(), cardWidth, cardHeight));
             label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
-            //labels.add(label);
             this.add(label);
         }
     }
 
     public void drawAllCards() {
-        //List<JLabel> cards = new ArrayList<>();
         Deck deck = new Deck();
         ImageIcon cardBackImage = null;
 
@@ -98,7 +95,6 @@ public class GamePanel extends JPanel {
                 Card card = deck.dealCard();
                 JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(card.getCardImage(), cardWidth, cardHeight));
                 label.setBounds(j * cardWidth + 75, i * cardHeight + 100, cardWidth, cardHeight);
-                //cards.add(label);
                 this.add(label);
 
                 if (cardBackImage == null) {

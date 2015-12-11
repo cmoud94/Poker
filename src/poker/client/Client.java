@@ -123,6 +123,9 @@ public class Client implements Runnable {
             }
 
             System.out.println("[Client] Connected");
+            if (this.getWindow() != null) {
+                this.getWindow().getConnectionPanel().clientConnected();
+            }
             this.getSc().write(ByteBuffer.wrap(Utils.getObjectAsBytes(this.getName())));
             this.getSc().register(this.getSelector(), SelectionKey.OP_READ);
         } catch (IOException e) {
@@ -177,7 +180,10 @@ public class Client implements Runnable {
                 e.printStackTrace();
             }
 
-            System.out.println("[Client] Dissconnected");
+            System.out.println("[Client] Disconnected");
+            if (this.getWindow() != null) {
+                this.getWindow().getConnectionPanel().clientDisconnected();
+            }
         }
     }
 
@@ -211,6 +217,9 @@ public class Client implements Runnable {
 
             if (readBytes < 0) {
                 System.out.println("[Client] Server disconnected");
+                if (this.getWindow() != null) {
+                    this.getWindow().getConnectionPanel().serverDisconnected();
+                }
                 key.cancel();
                 sc.close();
             }
@@ -239,14 +248,27 @@ public class Client implements Runnable {
         System.out.println("[Client] Received data from server");
 
         if (object instanceof String) {
+
             System.out.println("\t" + object);
+            if (object.equals("[Game] " + this.getName() + " - Are you ready?") && this.getWindow() != null) {
+                this.getWindow().getConnectionPanel().serverReady();
+            }
+
         } else if (object instanceof Table) {
+
             System.out.println("\tIn pot: " + ((Table) object).getPot());
             System.out.println("\tCommunity cards:");
             ((Table) object).printCommunityCards();
+
+            if (this.getWindow() != null) {
+                this.getWindow().getGamePanel().drawCommunityCards(((Table) object).getCommunityCards());
+            }
+
         } else if (object instanceof Player) {
+
             System.out.println("\tYour cards:");
             ((Player) object).printCards();
+
         }
     }
 
