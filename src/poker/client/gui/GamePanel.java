@@ -65,6 +65,10 @@ public class GamePanel extends JPanel {
         }
     }
 
+    public void showAvailableActions(List<String> availableActions, int money) {
+
+    }
+
     private void initComponents() {
         // Blind chips
         chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
@@ -122,8 +126,8 @@ public class GamePanel extends JPanel {
     }
 
     private void initCommunityCards() {
-        int communityCardsPosX = 250;
-        int communityCardsPosY = 200;
+        int communityCardsPosX = 253;
+        int communityCardsPosY = 207;
 
         BufferedImage cards = Utils.loadImage(this, "/poker/client/gui/img/cards.gif");
         BufferedImage cardBackImage = Utils.getSubImage(cards, 0, 724, 125, 181);
@@ -157,7 +161,7 @@ public class GamePanel extends JPanel {
         this.add(cardBack);
     }
 
-    public static class buttonPlayerActionsListener implements ActionListener {
+    static class buttonPlayerActionsListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
@@ -190,16 +194,22 @@ public class GamePanel extends JPanel {
                     break;
             }
         }
+
     }
 
-    public static class bettingSliderChangeListener implements ChangeListener {
+    static class bettingSliderChangeListener implements ChangeListener {
 
         @Override
         public void stateChanged(ChangeEvent changeEvent) {
-            if (slider.getValue() % 10 != 0) {
-                slider.setValue(Math.round(slider.getValue() / 10) * 10);
+            int val = slider.getValue();
+
+            if (val % 10 < 5) {
+                slider.setValue((val / 10) * 10);
+            } else {
+                slider.setValue((val / 10) * 10 + 10);
             }
         }
+
     }
 
 }

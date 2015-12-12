@@ -22,6 +22,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class Client implements Runnable {
@@ -141,11 +142,11 @@ public class Client implements Runnable {
     }
 
     public void clientLoop() {
-        System.out.println("[Client] Entering main loop");
+        //System.out.println("[Client] Entering main loop");
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select(1000);
+                this.getSelector().select();
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -237,6 +238,8 @@ public class Client implements Runnable {
             readBuffer.get(data, 0, read);
 
             this.processData(key, data);
+
+            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -249,6 +252,8 @@ public class Client implements Runnable {
             SocketChannel socketChannel = (SocketChannel) key.channel();
             byte[] data = this.getPendingData().get(socketChannel);
             this.getPendingData().remove(socketChannel);
+
+            System.out.println("\tData writed: " + Utils.getBytesAsObject(data));
 
             socketChannel.write(ByteBuffer.wrap(data));
 
@@ -268,25 +273,23 @@ public class Client implements Runnable {
             } else {
                 System.out.println("[Client] " + key.attachment() + ": " + object);
             }
+        } else if (object instanceof List) {
+            System.out.println("[Client] Available actions: " + object);
+
+            this.getWindow().getGamePanel().showAvailableActions((List<String>) object, this.getPlayer().getMoney());
         }
     }
 
     public void sendData(byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
-        System.out.println("Keys size " + this.getSelector().keys().size());
-
         for (SelectionKey key : this.getSelector().keys()) {
-            if (key.channel() instanceof SocketChannel && key.isValid()) {
+            if (key.channel() instanceof SocketChannel && key.isValid() && key.attachment().equals(name)) {
                 SocketChannel socketChannel = (SocketChannel) key.channel();
                 this.getPendingData().put(socketChannel, data);
                 key.interestOps(SelectionKey.OP_WRITE);
             }
         }
-
-        /*SocketChannel socketChannel = (SocketChannel) key.channel();
-        this.getPendingData().put(socketChannel, data);
-        key.interestOps(SelectionKey.OP_WRITE);*/
     }
 
     @Override

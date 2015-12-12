@@ -21,9 +21,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class Server implements Runnable {
 
@@ -33,7 +31,7 @@ public class Server implements Runnable {
 
     private Selector selector;
 
-    private Map<SocketChannel, byte[]> pendingData;
+    private Map<SocketChannel, List<byte[]>> pendingData;
 
     private final int buffSize;
 
@@ -80,7 +78,7 @@ public class Server implements Runnable {
         this.selector = selector;
     }
 
-    public Map<SocketChannel, byte[]> getPendingData() {
+    public Map<SocketChannel, List<byte[]>> getPendingData() {
         return pendingData;
     }
 
@@ -140,7 +138,7 @@ public class Server implements Runnable {
     }
 
     public void serverLoop() {
-        System.out.println("[Server] Waiting for clients");
+        //System.out.println("[Server] Waiting for clients");
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
@@ -188,7 +186,7 @@ public class Server implements Runnable {
     }
 
     private void accept(SelectionKey key) {
-        System.out.println("[Server] Client accepted");
+        //System.out.println("[Server] Client accepted");
 
         try {
             ServerSocketChannel serverSocketChannel = (ServerSocketChannel) key.channel();
@@ -232,6 +230,8 @@ public class Server implements Runnable {
             readBuffer.get(data, 0, read);
 
             this.processData(key, data);
+
+            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -242,10 +242,18 @@ public class Server implements Runnable {
 
         try {
             SocketChannel socketChannel = (SocketChannel) key.channel();
-            byte[] data = this.getPendingData().get(socketChannel);
+            List<byte[]> data = this.getPendingData().get(socketChannel);
             this.getPendingData().remove(socketChannel);
 
-            socketChannel.write(ByteBuffer.wrap(data));
+            while (!data.isEmpty()) {
+                byte[] bytes = data.remove(0);
+
+                System.out.println("\tData writed: " + Utils.getBytesAsObject(bytes));
+
+                socketChannel.write(ByteBuffer.wrap(bytes));
+
+
+            }
 
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
@@ -257,7 +265,13 @@ public class Server implements Runnable {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
-        this.getPendingData().put(socketChannel, data);
+        List<byte[]> pendingData = this.getPendingData().get(socketChannel);
+        if (pendingData == null) {
+            pendingData = new ArrayList<>();
+        }
+        pendingData.add(data);
+        this.getPendingData().remove(socketChannel);
+        this.getPendingData().put(socketChannel, pendingData);
         key.interestOps(SelectionKey.OP_WRITE);
     }
 
@@ -266,21 +280,17 @@ public class Server implements Runnable {
 
         for (SelectionKey key : this.getSelector().keys()) {
             if (key.channel() instanceof SocketChannel && key.isValid() && key.attachment().equals(name)) {
-                SocketChannel socketChannel = (SocketChannel) key.channel();
-                this.getPendingData().put(socketChannel, data);
-                key.interestOps(SelectionKey.OP_WRITE);
+                this.echo(key, data);
             }
         }
     }
 
     public void broadcast(byte[] data) {
-        System.out.println("[Server] Broadcasting data");
+        System.out.println("[Server] Broadcasting data | " + Utils.getBytesAsObject(data));
 
         for (SelectionKey key : this.getSelector().keys()) {
             if (key.channel() instanceof SocketChannel && key.isValid()) {
-                SocketChannel socketChannel = (SocketChannel) key.channel();
-                this.getPendingData().put(socketChannel, data);
-                key.interestOps(SelectionKey.OP_WRITE);
+                this.echo(key, data);
             }
         }
     }
@@ -346,9 +356,13 @@ public class Server implements Runnable {
                         System.exit(0);
                         break;
                     case "send":
-                        /*String name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.sendData(name, Utils.getObjectAsBytes(action));*/
+                        this.echo(name, Utils.getObjectAsBytes(action));
+                        this.echo(name, Utils.getObjectAsBytes(action));
+                        this.echo(name, Utils.getObjectAsBytes(action));
+                        this.echo(name, Utils.getObjectAsBytes(action));
+                        this.echo(name, Utils.getObjectAsBytes(action));
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");

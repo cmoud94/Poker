@@ -1,0 +1,8 @@
+Image width: 1000px x 575px
+
+Table offset: 49px x 79px
+Table diameter: 699px x 329px
+Community cards width: 290px x 72px
+
+Community cards left posX: 49 + (699/2) - (290/2) = 49 + 349 - 145 = 253
+Community cards left posY: 79 + (329/2) - (72/2) = 79 + 164 - 36 = 207
