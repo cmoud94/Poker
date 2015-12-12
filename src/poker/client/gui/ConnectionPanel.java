@@ -142,11 +142,6 @@ public class ConnectionPanel extends JPanel {
 
                 Thread clientLoop = new Thread(client, "clientLoop");
                 clientLoop.start();
-
-                if (clientLoop.isAlive()) {
-                    System.out.println("[Thread] ClientLoop is alive");
-                }
-                System.out.println("[ConnectionPanel] Connection finished");
             } else if (buttonConnect.getText().equals("Disconnect")) {
                 getClient().closeConnection();
                 buttonConnect.setText("Connect");

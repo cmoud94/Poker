@@ -306,7 +306,10 @@ public class Server implements Runnable {
 
                 key.attach(object);
 
-                this.getGame().getPlayers().add(new Player((String) object, this.getStartingMoney()));
+                Player player = new Player((String) object, this.getStartingMoney());
+                this.getGame().getPlayers().add(player);
+
+                this.echo(key, Utils.getObjectAsBytes(player));
 
                 if (this.getGame().getPlayers().size() == this.getGame().getNumOfPlayers()) {
                     this.getGame().init();

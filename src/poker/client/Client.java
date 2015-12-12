@@ -20,9 +20,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 public class Client implements Runnable {
@@ -278,10 +278,16 @@ public class Client implements Runnable {
             } else {
                 System.out.println("[Client] " + key.attachment() + ": " + object);
             }
-        } else if (object instanceof List) {
+        } else if (object instanceof ArrayList) {
             System.out.println("[Client] Available actions: " + object);
 
-            //this.getWindow().getGamePanel().showAvailableActions((List<String>) object, this.getPlayer().getMoney());
+            this.getWindow().getGamePanel().showAvailableActions((ArrayList) object, this.getPlayer().getMoney());
+        } else if (object instanceof Player) {
+            if (this.getPlayer() == null) {
+                System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
+
+                this.setPlayer((Player) object);
+            }
         }
     }
 

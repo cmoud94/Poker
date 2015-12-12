@@ -40,10 +40,13 @@ public class GamePanel extends JPanel {
 
     private final int chipSize = 40;
 
+    private final List<JButton> actionButtons;
+
     public GamePanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
         GamePanel.parent = parent;
         GamePanel.client = client;
         chips = new ArrayList<>();
+        this.actionButtons = new ArrayList<>();
 
         this.setBounds(x, y, width, height);
         this.setLayout(null);
@@ -65,8 +68,14 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void showAvailableActions(List<String> availableActions, int money) {
-
+    public void showAvailableActions(ArrayList availableActions, int money) {
+        for (JButton button : this.actionButtons) {
+            if (availableActions.contains(button.getText())) {
+                button.setEnabled(true);
+            } else {
+                button.setEnabled(false);
+            }
+        }
     }
 
     private void initComponents() {
@@ -97,21 +106,23 @@ public class GamePanel extends JPanel {
     }
 
     private void initAvailableActionsButtons() {
-        List<String> availableActions = new ArrayList<>();
-        availableActions.add("fold");
-        availableActions.add("call");
-        availableActions.add("bet");
-        availableActions.add("all-in");
+        List<String> buttonActions = new ArrayList<>();
+        buttonActions.add("fold");
+        buttonActions.add("call");
+        buttonActions.add("bet");
+        buttonActions.add("all-in");
 
         int actionsPosX = 175;
         int actionsPosY = this.getHeight() - 100;
         int buttonWidth = 100;
         int buttonHeight = 30;
 
-        for (int i = 0; i < availableActions.size(); i++) {
-            JButton button = new JButton(availableActions.get(i));
+        for (int i = 0; i < buttonActions.size(); i++) {
+            JButton button = new JButton(buttonActions.get(i));
             button.setActionCommand(button.getText());
             button.setBounds(i * buttonWidth + actionsPosX + (i * 10), actionsPosY, buttonWidth, buttonHeight);
+            button.setEnabled(false);
+            this.actionButtons.add(button);
             this.add(button);
             button.addActionListener(new buttonPlayerActionsListener());
         }
