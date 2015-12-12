@@ -261,7 +261,19 @@ public class Server implements Runnable {
         key.interestOps(SelectionKey.OP_WRITE);
     }
 
-    private void broadcast(byte[] data) {
+    public void echo(String name, byte[] data) {
+        //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
+
+        for (SelectionKey key : this.getSelector().keys()) {
+            if (key.channel() instanceof SocketChannel && key.isValid() && key.attachment().equals(name)) {
+                SocketChannel socketChannel = (SocketChannel) key.channel();
+                this.getPendingData().put(socketChannel, data);
+                key.interestOps(SelectionKey.OP_WRITE);
+            }
+        }
+    }
+
+    public void broadcast(byte[] data) {
         System.out.println("[Server] Broadcasting data");
 
         for (SelectionKey key : this.getSelector().keys()) {
@@ -289,9 +301,9 @@ public class Server implements Runnable {
                     this.getGame().init();
                 }
             } else if (object.equals("yes")) {
-                System.out.println("[Server] " + key.attachment() + " is now ready to play");
-
                 Player player = this.getGame().getPlayerByPlayerName((String) key.attachment());
+                System.out.println("[Server] " + player.getName() + " is now ready to play");
+
 
                 this.setLastMessage("");
                 player.setReady(true);
@@ -305,9 +317,8 @@ public class Server implements Runnable {
 
                 if (allReady) {
                     System.out.println("[Server] Starting gameLoop");
-                    this.getGame().init();
-                    //Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
-                    //gameLoopThread.start();
+                    Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
+                    gameLoopThread.start();
                 }
             } else {
                 System.out.println("[Server] " + key.attachment() + " said: " + object);

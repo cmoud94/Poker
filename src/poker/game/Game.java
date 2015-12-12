@@ -246,7 +246,7 @@ public class Game implements Runnable {
                         do {
                             if (this.getServer() != null) {
 
-                                //this.getServer().sendData(this.getPlayers().get(i), Utils.getObjectAsBytes(availableActions));
+                                this.getServer().echo(this.getPlayers().get(i).getName(), Utils.getObjectAsBytes(availableActions));
 
                                 while (this.getServer().getLastMessage().equals("")) {
                                     try {
@@ -339,7 +339,7 @@ public class Game implements Runnable {
         }
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(this.getTable()));
+            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
         }
         this.getTable().printCommunityCards();
         System.out.println("FLOP");
@@ -353,7 +353,7 @@ public class Game implements Runnable {
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(this.getTable()));
+            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
         }
         this.getTable().printCommunityCards();
         System.out.println("TURN");
@@ -367,7 +367,7 @@ public class Game implements Runnable {
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(this.getTable()));
+            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
         }
         this.getTable().printCommunityCards();
         System.out.println("RIVER");
@@ -477,7 +477,7 @@ public class Game implements Runnable {
         this.setActivePlayers(this.getActivePlayers() - 1);
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(player.getName() + " has folded"));
+            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has folded"));
         }
 
         return true;
@@ -488,7 +488,7 @@ public class Game implements Runnable {
             System.out.println("\t" + player.getName() + " has checked.");
 
             if (this.getServer() != null) {
-                //this.getServer().broadcastData(Utils.getObjectAsBytes(player.getName() + " has checked"));
+                this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has checked"));
             }
 
             return true;
@@ -513,7 +513,7 @@ public class Game implements Runnable {
             System.out.println("\t" + player.getName() + " | You've called '" + call + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
             if (this.getServer() != null) {
-                //this.getServer().broadcastData(Utils.getObjectAsBytes(player.getName() + " has called"));
+                this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has called"));
             }
 
             this.afterCall();
@@ -555,7 +555,7 @@ public class Game implements Runnable {
         }
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(player.getName() + " has bet"));
+            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has bet"));
         }
 
         this.afterBet(player);
@@ -574,7 +574,7 @@ public class Game implements Runnable {
         System.out.println("\tYou've bet all your money. Money: '" + player.getMoney() + "'. In pot: '" + this.getTable().getPot() + "'.");
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(player.getName() + " is all-in"));
+            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " is all-in"));
         }
 
         this.setLastBet(bet);
@@ -591,7 +591,7 @@ public class Game implements Runnable {
         System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | You've bet '" + blind + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
         if (this.getServer() != null) {
-            //this.getServer().broadcastData(Utils.getObjectAsBytes(player.getName() + " has bet " + player.getBlind()));
+            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has bet " + player.getBlind()));
         }
 
         this.setLastBet(blind);

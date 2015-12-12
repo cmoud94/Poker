@@ -17,6 +17,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,6 +38,8 @@ public class GamePanel extends JPanel {
 
     private final int cardHeight = 72;
 
+    private final int chipSize = 40;
+
     public GamePanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
         GamePanel.parent = parent;
         GamePanel.client = client;
@@ -46,7 +49,7 @@ public class GamePanel extends JPanel {
         this.setLayout(null);
         //this.setBorder(new LineBorder(Color.RED));
 
-        this.initComponents(40);
+        this.initComponents();
     }
 
     public static Client getClient() {
@@ -62,7 +65,8 @@ public class GamePanel extends JPanel {
         }
     }
 
-    private void initComponents(int chipSize) {
+    private void initComponents() {
+        // Blind chips
         chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
         chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
         chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
@@ -76,20 +80,25 @@ public class GamePanel extends JPanel {
             this.add(button);
         }
 
-        List<String> aa = new ArrayList<>();
-        aa.add("fold");
-        aa.add("call");
-        aa.add("bet");
-        aa.add("all-in");
+        // Community cards
+        this.initCommunityCards();
 
-        this.showPlayerAvailableAction(aa, 500);
+        // Action buttons
+        this.initAvailableActionsButtons();
 
+        // Background image
         JLabel background = new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/table_1.png"), this.getWidth(), this.getHeight()));
         background.setBounds(this.getInsets().left, this.getInsets().top, this.getWidth(), this.getHeight());
         this.add(background);
     }
 
-    public void showPlayerAvailableAction(List<String> availableActions, int betLimit) {
+    private void initAvailableActionsButtons() {
+        List<String> availableActions = new ArrayList<>();
+        availableActions.add("fold");
+        availableActions.add("call");
+        availableActions.add("bet");
+        availableActions.add("all-in");
+
         int actionsPosX = 175;
         int actionsPosY = this.getHeight() - 100;
         int buttonWidth = 100;
@@ -103,7 +112,7 @@ public class GamePanel extends JPanel {
             button.addActionListener(new buttonPlayerActionsListener());
         }
 
-        slider = new JSlider(JSlider.HORIZONTAL, 10, betLimit, 10);
+        slider = new JSlider(JSlider.HORIZONTAL, 10, 100, 10);
         slider.setBounds(this.getInsets().left, this.getHeight() - 60, this.getWidth(), 60);
         slider.setOpaque(true);
         slider.setMajorTickSpacing(10);
@@ -112,18 +121,21 @@ public class GamePanel extends JPanel {
         slider.addChangeListener(new bettingSliderChangeListener());
     }
 
-    public void drawCommunityCards(List<Card> cards) {
+    private void initCommunityCards() {
         int communityCardsPosX = 250;
         int communityCardsPosY = 200;
 
-        for (int i = 0; i < cards.size(); i++) {
-            JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(cards.get(i).getCardImage(), cardWidth, cardHeight));
+        BufferedImage cards = Utils.loadImage(this, "/poker/client/gui/img/cards.gif");
+        BufferedImage cardBackImage = Utils.getSubImage(cards, 0, 724, 125, 181);
+
+        for (int i = 0; i < 5; i++) {
+            JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(cardBackImage, cardWidth, cardHeight));
             label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
             this.add(label);
         }
     }
 
-    public void drawAllCards() {
+    private void drawAllCards() {
         Deck deck = new Deck();
         ImageIcon cardBackImage = null;
 
@@ -152,19 +164,27 @@ public class GamePanel extends JPanel {
             switch (actionEvent.getActionCommand()) {
                 case "fold":
                     System.out.println("[GamePanel] fold triggered");
-                    getClient().sendData(Utils.getObjectAsBytes("fold"));
+                    if (client.getSelector() != null) {
+                        getClient().sendData(Utils.getObjectAsBytes("fold"));
+                    }
                     break;
                 case "call":
                     System.out.println("[GamePanel] call triggered");
-                    getClient().sendData(Utils.getObjectAsBytes("call"));
+                    if (client.getSelector() != null) {
+                        getClient().sendData(Utils.getObjectAsBytes("call"));
+                    }
                     break;
                 case "bet":
                     System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
-                    getClient().sendData(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
+                    if (client.getSelector() != null) {
+                        getClient().sendData(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
+                    }
                     break;
                 case "all-in":
                     System.out.println("[GamePanel] all-in triggered");
-                    getClient().sendData(Utils.getObjectAsBytes("all-in"));
+                    if (client.getSelector() != null) {
+                        getClient().sendData(Utils.getObjectAsBytes("all-in"));
+                    }
                     break;
                 default:
                     break;
