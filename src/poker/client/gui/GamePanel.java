@@ -10,6 +10,7 @@ package poker.client.gui;
 import poker.client.Client;
 import poker.game.Card;
 import poker.game.Deck;
+import poker.game.Player;
 import poker.utils.Utils;
 
 import javax.swing.*;
@@ -29,8 +30,6 @@ public class GamePanel extends JPanel {
 
     private static Client client;
 
-    private static List<JLabel> chips;
-
     private static JSlider slider;
 
     // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
@@ -42,11 +41,13 @@ public class GamePanel extends JPanel {
 
     private final List<JButton> actionButtons;
 
+    private final List<JPanel> playerPanels;
+
     public GamePanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
         GamePanel.parent = parent;
         GamePanel.client = client;
-        chips = new ArrayList<>();
         this.actionButtons = new ArrayList<>();
+        this.playerPanels = new ArrayList<>();
 
         this.setBounds(x, y, width, height);
         this.setLayout(null);
@@ -59,15 +60,6 @@ public class GamePanel extends JPanel {
         return client;
     }
 
-    public void setChipPosition(String name, int posX, int posY) {
-        for (JLabel button : chips) {
-            if (button.getName().equals(name)) {
-                button.setLocation(posX - (button.getWidth() / 2), posY - (button.getHeight() / 2));
-                button.setVisible(true);
-            }
-        }
-    }
-
     public void showAvailableActions(ArrayList availableActions, int money) {
         for (JButton button : this.actionButtons) {
             if (availableActions.contains(button.getText())) {
@@ -78,20 +70,23 @@ public class GamePanel extends JPanel {
         }
     }
 
-    private void initComponents() {
-        // Blind chips
-        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
-        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
-        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
-        chips.get(0).setName("DEALER");
-        chips.get(1).setName("SMALL_BLIND");
-        chips.get(2).setName("BIG_BLIND");
-
-        for (JLabel button : chips) {
-            button.setSize(chipSize, chipSize);
-            button.setVisible(false);
-            this.add(button);
+    public void showPlayersInfo(ArrayList<Player> players) {
+        for (int i = 0; i < players.size(); i++) {
+            this.playerPanels.add(new PlayerPanel(this, players.get(i), (i + 1), players.get(i).getName().equals(getClient().getName())));
         }
+    }
+
+    private void initComponents() {
+        // Player panel
+        Player player = new Player("Kokot", 1000);
+        player.setBlind(Player.Blind.DEALER);
+
+        Deck deck = new Deck();
+        player.getCards().add(deck.dealCard());
+        player.getCards().add(deck.dealCard());
+
+        PlayerPanel playerPanel = new PlayerPanel(this, player, 1, true);
+        this.add(playerPanel);
 
         // Community cards
         this.initCommunityCards();

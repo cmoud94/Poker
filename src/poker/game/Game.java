@@ -186,6 +186,10 @@ public class Game implements Runnable {
                 player.getCards().add(this.getDeck().dealCard());
             }
         }
+
+        for (Player player : this.getPlayers()) {
+            this.getServer().echo(player.getName(), Utils.getObjectAsBytes(player));
+        }
     }
 
     private boolean allCaled() {
