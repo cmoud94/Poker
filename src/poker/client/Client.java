@@ -146,7 +146,7 @@ public class Client implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select();
+                this.getSelector().select(10);
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -160,12 +160,10 @@ public class Client implements Runnable {
 
                     if (key.isConnectable()) {
                         this.connect(key);
-                    }
-                    if (key.isWritable()) {
-                        this.write(key);
-                    }
-                    if (key.isReadable()) {
+                    } else if (key.isReadable()) {
                         this.read(key);
+                    } else if (key.isWritable()) {
+                        this.write(key);
                     }
                 }
             }
@@ -238,8 +236,6 @@ public class Client implements Runnable {
             readBuffer.get(data, 0, read);
 
             this.processData(key, data);
-
-            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -267,7 +263,7 @@ public class Client implements Runnable {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {
-            if (object.equals("[Game] " + this.getName() + " are you ready?")) {
+            if (object.equals("[Game] Are you ready?")) {
                 System.out.println("[Client] " + object);
                 this.getWindow().getConnectionPanel().serverReady();
             } else {

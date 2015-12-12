@@ -141,9 +141,7 @@ public class Game implements Runnable {
         this.setRunning(true);
 
         if (this.getServer() != null) {
-            for (Player player : this.getPlayers()) {
-                this.getServer().echo(player.getName(), Utils.getObjectAsBytes("[Game] " + player.getName() + " are you ready?"));
-            }
+            this.getServer().broadcast(Utils.getObjectAsBytes("[Game] Are you ready?"));
         } else {
             for (Player player : this.getPlayers()) {
                 player.setReady(true);

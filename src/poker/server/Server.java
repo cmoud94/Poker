@@ -142,7 +142,7 @@ public class Server implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select();
+                this.getSelector().select(1000);
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -156,12 +156,10 @@ public class Server implements Runnable {
 
                     if (key.isAcceptable()) {
                         this.accept(key);
-                    }
-                    if (key.isWritable()) {
-                        this.write(key);
-                    }
-                    if (key.isReadable()) {
+                    } else if (key.isReadable()) {
                         this.read(key);
+                    } else if (key.isWritable()) {
+                        this.write(key);
                     }
                 }
             }
@@ -230,8 +228,6 @@ public class Server implements Runnable {
             readBuffer.get(data, 0, read);
 
             this.processData(key, data);
-
-            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -248,14 +244,20 @@ public class Server implements Runnable {
             while (!data.isEmpty()) {
                 byte[] bytes = data.remove(0);
 
-                System.out.println("\tData writed: " + Utils.getBytesAsObject(bytes));
+                System.out.println("\tData writen: " + Utils.getBytesAsObject(bytes));
 
                 socketChannel.write(ByteBuffer.wrap(bytes));
 
+                key.interestOps(SelectionKey.OP_READ);
 
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
-            key.interestOps(SelectionKey.OP_READ);
+            //key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -303,9 +305,8 @@ public class Server implements Runnable {
                 System.out.println("[Server] Player " + object + " has connected");
 
                 key.attach(object);
-                //this.echo(key, Utils.getObjectAsBytes("Welcome " + object));
 
-                this.getGame().getPlayers().add(new Player((String) key.attachment(), this.getStartingMoney()));
+                this.getGame().getPlayers().add(new Player((String) object, this.getStartingMoney()));
 
                 if (this.getGame().getPlayers().size() == this.getGame().getNumOfPlayers()) {
                     this.getGame().init();
@@ -358,10 +359,15 @@ public class Server implements Runnable {
                     case "send":
                         String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.echo(name, Utils.getObjectAsBytes(action));
-                        this.echo(name, Utils.getObjectAsBytes(action));
-                        this.echo(name, Utils.getObjectAsBytes(action));
-                        this.echo(name, Utils.getObjectAsBytes(action));
+                        this.echo(name, Utils.getObjectAsBytes("1. " + action));
+                        this.echo(name, Utils.getObjectAsBytes("2. " + action));
+                        this.echo(name, Utils.getObjectAsBytes("3. " + action));
+                        this.echo(name, Utils.getObjectAsBytes("4. " + action));
+                        this.echo(name, Utils.getObjectAsBytes("5. " + action));
+                        break;
+                    case "send_2":
+                        name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        action = JOptionPane.showInputDialog("[Server] Type your message.");
                         this.echo(name, Utils.getObjectAsBytes(action));
                         break;
                     case "broadcast":
