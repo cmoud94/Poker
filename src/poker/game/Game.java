@@ -8,10 +8,13 @@
 package poker.game;
 
 import poker.server.Server;
+import poker.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -131,7 +134,7 @@ public class Game implements Runnable {
         return server;
     }
 
-    public void initGame() {
+    public void init() {
         if (this.getNumOfPlayers() != this.getPlayers().size()) {
             System.out.println("[Game] Player count differs from the one that was set! Aborting...");
             System.exit(0);
@@ -140,8 +143,10 @@ public class Game implements Runnable {
         this.setRunning(true);
 
         if (this.getServer() != null) {
-            for (Player player : this.getPlayers()) {
-                //this.getServer().sendData(player, Utils.getObjectAsBytes("[Game] " + player.getName() + " - Are you ready?"));
+            for (SelectionKey key : this.getServer().getSelector().keys()) {
+                if (key.isValid() && key.channel() instanceof SocketChannel) {
+                    this.getServer().echo(key, Utils.getObjectAsBytes("[Game] " + key.attachment() + " are you ready?"));
+                }
             }
         } else {
             for (Player player : this.getPlayers()) {

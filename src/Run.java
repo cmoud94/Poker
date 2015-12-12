@@ -56,7 +56,7 @@ class Run {
         game.getPlayers().add(p2);
         game.getPlayers().add(p3);
 
-        game.initGame();
+        game.init();
         game.gameLoop();
     }
 

@@ -8,6 +8,7 @@
 package poker.client.gui;
 
 import poker.client.Client;
+import poker.utils.Utils;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -16,6 +17,8 @@ import java.awt.event.ActionListener;
 public class ConnectionPanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
+
+    private static ClientWindow parent;
 
     private static Client client;
 
@@ -31,7 +34,8 @@ public class ConnectionPanel extends JPanel {
 
     private static JButton buttonReady;
 
-    public ConnectionPanel(int x, int y, int width, int height, Client client) {
+    public ConnectionPanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
+        ConnectionPanel.parent = parent;
         ConnectionPanel.client = client;
 
         this.setBounds(x, y, width, height);
@@ -77,6 +81,9 @@ public class ConnectionPanel extends JPanel {
         textFieldAddress.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
         this.add(textFieldAddress);
         posY += itemHeight;
+
+        //TODO: Smazat!!!
+        textFieldAddress.setText("localhost:9999");
 
         JLabel labelName = new JLabel("Name");
         labelName.setBounds(this.getInsets().left + ((this.getWidth() - itemWidth) / 2), posY, itemWidth, itemHeight);
@@ -124,24 +131,26 @@ public class ConnectionPanel extends JPanel {
             if (!textFieldAddress.getText().equals("") && !textFieldName.getText().equals("") && buttonConnect.getText().equals("Connect")) {
                 System.out.println("[ConnectionPanel - buttonConnectAction] Connecting to server...");
 
-                getClient().setName(textFieldName.getText().trim());
-
                 String address = textFieldAddress.getText().trim();
                 int port = Integer.parseInt(address.substring((address.indexOf(':') + 1), address.length()));
                 address = address.substring(0, address.indexOf(':'));
 
+                getClient().setName(textFieldName.getText().trim());
+                getClient().setAddress(address);
+                getClient().setPort(port);
+                getClient().init();
+
                 System.out.println("\tAddress: " + address + " port: " + port);
                 System.out.println("\tPlayer name: " + getClient().getName());
 
-                //getClient().connect(address, port);
                 buttonConnect.setText("Disconnect");
                 labelConnectionInfo.setText(getClient().getName() + "@" + address + ":" + port);
 
-                Thread clientLoop = new Thread(getClient(), "clientLoop");
-                clientLoop.start();
+                parent.runClientLoop();
             } else if (buttonConnect.getText().equals("Disconnect")) {
-                //getClient().disconnect();
+                getClient().closeConnection();
                 buttonConnect.setText("Connect");
+                labelConnectionInfo.setText("");
             } else {
                 JOptionPane.showMessageDialog(null, "Input the name and address in the right format.", "Error", JOptionPane.ERROR_MESSAGE);
             }
@@ -152,7 +161,7 @@ public class ConnectionPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            //getClient().sendMessage(Utils.getObjectAsBytes("yes"));
+            getClient().sendData(Utils.getObjectAsBytes("yes"));
             labelPlayerReady.setVisible(false);
             buttonReady.setVisible(false);
         }

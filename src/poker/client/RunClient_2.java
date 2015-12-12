@@ -15,7 +15,10 @@ public class RunClient_2 {
 
         client.setName("Player_2");
 
+        client.init();
+
         thread.start();
+
         client.consoleLoop();
     }
 

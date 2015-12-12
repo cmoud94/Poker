@@ -26,9 +26,9 @@ import java.util.Map;
 
 public class Client implements Runnable {
 
-    private final String address;
+    private String address;
 
-    private final int port;
+    private int port;
 
     private SocketChannel socketChannel;
 
@@ -43,6 +43,10 @@ public class Client implements Runnable {
     private Player player;
 
     private final ClientWindow window;
+
+    public Client(ClientWindow window) {
+        this(window, "", 0);
+    }
 
     public Client(ClientWindow window, String address, int port) {
         this.address = address;
@@ -60,8 +64,16 @@ public class Client implements Runnable {
         return address;
     }
 
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public int getPort() {
         return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
     }
 
     public SocketChannel getSocketChannel() {
@@ -148,11 +160,9 @@ public class Client implements Runnable {
                     if (key.isConnectable()) {
                         this.connect(key);
                     }
-
                     if (key.isWritable()) {
                         this.write(key);
                     }
-
                     if (key.isReadable()) {
                         this.read(key);
                     }
@@ -189,8 +199,8 @@ public class Client implements Runnable {
             }
 
             socketChannel.configureBlocking(false);
-            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE);
             this.getPendingData().put(socketChannel, Utils.getObjectAsBytes(this.getName()));
+            socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE, "Server");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -252,8 +262,31 @@ public class Client implements Runnable {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {
-            System.out.println("[Client] Received message: " + object);
+            if (object.equals("[Game] " + this.getName() + " are you ready?")) {
+                System.out.println("[Client] " + object);
+                this.getWindow().getConnectionPanel().serverReady();
+            } else {
+                System.out.println("[Client] " + key.attachment() + ": " + object);
+            }
         }
+    }
+
+    public void sendData(byte[] data) {
+        //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
+
+        System.out.println("Keys size " + this.getSelector().keys().size());
+
+        for (SelectionKey key : this.getSelector().keys()) {
+            if (key.channel() instanceof SocketChannel && key.isValid()) {
+                SocketChannel socketChannel = (SocketChannel) key.channel();
+                this.getPendingData().put(socketChannel, data);
+                key.interestOps(SelectionKey.OP_WRITE);
+            }
+        }
+
+        /*SocketChannel socketChannel = (SocketChannel) key.channel();
+        this.getPendingData().put(socketChannel, data);
+        key.interestOps(SelectionKey.OP_WRITE);*/
     }
 
     @Override
@@ -276,8 +309,7 @@ public class Client implements Runnable {
                         break;
                     case "send":
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
-                        this.getSocketChannel().register(this.getSelector(), SelectionKey.OP_WRITE);
-                        this.getPendingData().put(this.getSocketChannel(), Utils.getObjectAsBytes(action));
+                        this.sendData(Utils.getObjectAsBytes(action));
                         break;
                     default:
                         break;

@@ -20,13 +20,14 @@ public class ClientWindow {
 
     private GamePanel gamePanel;
 
-    private final Client client = null; // TODO: Opravit
+    private Client client;
 
     private final int WIDTH = 1000;
 
     private final int HEIGHT = 600;
 
     public ClientWindow() {
+        this.client = new Client(this);
         initialize();
     }
 
@@ -69,11 +70,16 @@ public class ClientWindow {
         contentPane.setLayout(null);
         Insets insets = contentPane.getInsets();
 
-        connectionPanel = new ConnectionPanel(insets.left, insets.top, (WIDTH / 5), contentPane.getHeight(), client);
+        connectionPanel = new ConnectionPanel(this, insets.left, insets.top, (WIDTH / 5), contentPane.getHeight(), client);
         contentPane.add(connectionPanel);
 
-        gamePanel = new GamePanel(connectionPanel.getWidth(), insets.top, (contentPane.getWidth() - connectionPanel.getWidth()), contentPane.getHeight(), client);
+        gamePanel = new GamePanel(this, connectionPanel.getWidth(), insets.top, (contentPane.getWidth() - connectionPanel.getWidth()), contentPane.getHeight(), client);
         contentPane.add(gamePanel);
+    }
+
+    public void runClientLoop() {
+        Thread clientLoop = new Thread(client, "clientLoop");
+        clientLoop.start();
     }
 
 }
