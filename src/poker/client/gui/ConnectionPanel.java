@@ -54,17 +54,14 @@ public class ConnectionPanel extends JPanel {
         buttonReady.setVisible(true);
     }
 
-    public void serverDisconnected() {
-        labelConnectionInfo.setText("[Server] Disconnected");
-        buttonConnect.setText("Connect");
-    }
-
     public void clientConnected() {
-        labelConnectionInfo.setText("Connected " + getClient().getAddress() + ":" + getClient().getPort());
+        buttonConnect.setText("Disconnect");
+        labelConnectionInfo.setText(getClient().getName() + "@" + getClient().getAddress() + ":" + getClient().getPort());
     }
 
     public void clientDisconnected() {
-        labelConnectionInfo.setText("[Client] Disconnected");
+        labelConnectionInfo.setText("Offline");
+        buttonConnect.setText("Connect");
     }
 
     private void initComponents() {
@@ -143,10 +140,13 @@ public class ConnectionPanel extends JPanel {
                 System.out.println("\tAddress: " + address + " port: " + port);
                 System.out.println("\tPlayer name: " + getClient().getName());
 
-                buttonConnect.setText("Disconnect");
-                labelConnectionInfo.setText(getClient().getName() + "@" + address + ":" + port);
+                Thread clientLoop = new Thread(client, "clientLoop");
+                clientLoop.start();
 
-                parent.runClientLoop();
+                if (clientLoop.isAlive()) {
+                    System.out.println("[Thread] ClientLoop is alive");
+                }
+                System.out.println("[ConnectionPanel] Connection finished");
             } else if (buttonConnect.getText().equals("Disconnect")) {
                 getClient().closeConnection();
                 buttonConnect.setText("Connect");
@@ -161,9 +161,10 @@ public class ConnectionPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            getClient().sendData(Utils.getObjectAsBytes("yes"));
+            System.out.println("[ConnectionPanel] Ready to play");
             labelPlayerReady.setVisible(false);
             buttonReady.setVisible(false);
+            getClient().sendData(Utils.getObjectAsBytes("yes"));
         }
     }
 

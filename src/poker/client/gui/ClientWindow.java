@@ -77,9 +77,4 @@ public class ClientWindow {
         contentPane.add(gamePanel);
     }
 
-    public void runClientLoop() {
-        Thread clientLoop = new Thread(client, "clientLoop");
-        clientLoop.start();
-    }
-
 }

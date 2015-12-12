@@ -77,27 +77,27 @@ public class Client implements Runnable {
         this.port = port;
     }
 
-    public SocketChannel getSocketChannel() {
+    private SocketChannel getSocketChannel() {
         return socketChannel;
     }
 
-    public void setSocketChannel(SocketChannel socketChannel) {
+    private void setSocketChannel(SocketChannel socketChannel) {
         this.socketChannel = socketChannel;
     }
 
-    public Selector getSelector() {
+    private Selector getSelector() {
         return selector;
     }
 
-    public void setSelector(Selector selector) {
+    private void setSelector(Selector selector) {
         this.selector = selector;
     }
 
-    public Map<SocketChannel, byte[]> getPendingData() {
+    private Map<SocketChannel, byte[]> getPendingData() {
         return pendingData;
     }
 
-    public int getBuffSize() {
+    private int getBuffSize() {
         return buffSize;
     }
 
@@ -117,7 +117,7 @@ public class Client implements Runnable {
         this.player = player;
     }
 
-    public ClientWindow getWindow() {
+    private ClientWindow getWindow() {
         return window;
     }
 
@@ -146,7 +146,7 @@ public class Client implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select(10);
+                this.getSelector().select(1000);
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -181,6 +181,7 @@ public class Client implements Runnable {
                 //this.getSelector().close();
                 this.getSocketChannel().socket().close();
                 this.getSocketChannel().close();
+                this.getWindow().getConnectionPanel().clientDisconnected();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -200,6 +201,7 @@ public class Client implements Runnable {
             socketChannel.configureBlocking(false);
             this.getPendingData().put(socketChannel, Utils.getObjectAsBytes(this.getName()));
             socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE, "Server");
+            this.getWindow().getConnectionPanel().clientConnected();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -228,6 +230,7 @@ public class Client implements Runnable {
                 System.out.println("[Client] Nothing to read, closing connection");
                 key.cancel();
                 socketChannel.close();
+                this.closeConnection();
                 return;
             }
 
@@ -253,6 +256,12 @@ public class Client implements Runnable {
 
             socketChannel.write(ByteBuffer.wrap(data));
 
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
@@ -272,7 +281,7 @@ public class Client implements Runnable {
         } else if (object instanceof List) {
             System.out.println("[Client] Available actions: " + object);
 
-            this.getWindow().getGamePanel().showAvailableActions((List<String>) object, this.getPlayer().getMoney());
+            //this.getWindow().getGamePanel().showAvailableActions((List<String>) object, this.getPlayer().getMoney());
         }
     }
 
@@ -280,7 +289,7 @@ public class Client implements Runnable {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
         for (SelectionKey key : this.getSelector().keys()) {
-            if (key.channel() instanceof SocketChannel && key.isValid() && key.attachment().equals(name)) {
+            if (key.channel() instanceof SocketChannel && key.isValid()) {
                 SocketChannel socketChannel = (SocketChannel) key.channel();
                 this.getPendingData().put(socketChannel, data);
                 key.interestOps(SelectionKey.OP_WRITE);

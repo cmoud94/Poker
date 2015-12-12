@@ -257,7 +257,7 @@ public class Server implements Runnable {
                 }
             }
 
-            //key.interestOps(SelectionKey.OP_READ);
+            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
