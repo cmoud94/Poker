@@ -112,16 +112,10 @@ public class PlayerPanel extends JPanel {
                     }
                     break;
                 case "name":
+                    label.setText("");
+                    label.setSize(label.getPreferredSize());
                     label.setText(player.getName() + " (" + player.getMoney() + ")");
                     label.setSize(label.getPreferredSize());
-
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-
-                    label.setText(player.getName() + " (" + player.getMoney() + ")");
                     if (isClient) {
                         label.setBackground(new Color(0, 255, 255, 200));
                     } else {

@@ -190,7 +190,7 @@ public class Game implements Runnable {
         /*for (Player player : this.getPlayers()) {
             System.out.println("[Game] Sending Player object to " + player.getName());
         }*/
-        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+        //this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
     }
 
     private boolean allCaled() {
@@ -228,16 +228,16 @@ public class Game implements Runnable {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind() / 2);
                             smallBlind = true;
-                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable().getPot()));
                             this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
                             continue;
                         }
 
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.BIG_BLIND && !bigBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind());
                             bigBlind = true;
-                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable().getPot()));
                             this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
                             continue;
                         }
 
@@ -266,6 +266,9 @@ public class Game implements Runnable {
                                     money = Integer.parseInt(action.substring(3).trim());
                                     action = "bet";
                                 }
+
+                                this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+                                this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
                             } else {
                                 System.out.println(this.getPlayers().get(i).getName() + " " + availableActions);
                                 try {
@@ -279,9 +282,6 @@ public class Game implements Runnable {
                                 }
                             }
                         } while (!this.handleAction(action, this.getPlayers().get(i), money));
-
-                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable().getPot()));
-                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                     }
                 } else {
                     System.out.println(this.getPlayers().get(i).getName() + " not playing this round.");

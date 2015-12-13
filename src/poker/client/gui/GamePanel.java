@@ -101,38 +101,23 @@ public class GamePanel extends JPanel {
     }
 
     public void drawCommunityCards(Table table) {
-        //int communityCardsPosX = 253;
-        //int communityCardsPosY = 207;
-
         for (int i = 0; i < table.getCommunityCards().size(); i++) {
             JLabel label = GamePanel.communityCards.get(i);
             Card card = table.getCommunityCards().get(i);
             label.setIcon(card.getCardImage());
-            //label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
         }
     }
 
     public void updatePot(int money) {
         pot.setText("Pot: " + money);
-        pot.setPreferredSize(pot.getPreferredSize());
-
-        try {
-            Thread.sleep(10);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        pot.setText("Pot: " + money);
+        pot.setSize(pot.getPreferredSize());
+        pot.setVisible(true);
     }
 
     private void initComponents() {
         // Players
-        //Deck deck = new Deck();
         for (int i = 0; i < 8; i++) {
-            //Player player = new Player((i + 1), "Player_" + (i + 1), 500000);
-            //player.getCards().add(deck.dealCard());
-            //player.getCards().add(deck.dealCard());
-            PlayerPanel playerPanel = new PlayerPanel(this, (i + 1)); //new PlayerPanel(this, player, player.getID(), true, false);
+            PlayerPanel playerPanel = new PlayerPanel(this, (i + 1));
             playerPanels.add(playerPanel);
             this.add(playerPanel);
         }
@@ -144,6 +129,7 @@ public class GamePanel extends JPanel {
         pot.setBackground(Color.LIGHT_GRAY);
         pot.setSize(pot.getPreferredSize());
         pot.setLocation(375, 290);
+        pot.setVisible(false);
         this.add(pot);
 
         // Community cards
@@ -246,7 +232,7 @@ public class GamePanel extends JPanel {
                     break;
                 case "bet":
                     //System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
-                    getClient().sendData(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
+                    getClient().sendData(Utils.getObjectAsBytes("bet " + String.valueOf(slider.getValue())));
                     break;
                 case "all-in":
                     //System.out.println("[GamePanel] all-in triggered");
