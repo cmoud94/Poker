@@ -8,7 +8,6 @@
 package poker.client;
 
 import poker.client.gui.ClientWindow;
-import poker.game.Card;
 import poker.game.Player;
 import poker.utils.Utils;
 
@@ -283,19 +282,14 @@ public class Client implements Runnable {
             if (((ArrayList) object).get(0) instanceof String) {
                 System.out.println("[Client] Available actions: " + object);
                 this.getWindow().getGamePanel().showAvailableActions((ArrayList) object, this.getPlayer().getMoney());
-            } else if (((ArrayList) object).get(0) instanceof Player) {
-                this.getWindow().getGamePanel().showPlayersInfo((ArrayList<Player>) object, false);
             }
         } else if (object instanceof Player) {
             if (this.getPlayer() == null) {
                 System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
                 this.setPlayer((Player) object);
-            } else if (this.getName().equals(((Player) object).getName())) {
-                this.setPlayer((Player) object);
+            } else {
+                this.getWindow().getGamePanel().showPlayersInfo((Player) object, false);
             }
-        } else if (object instanceof Card) {
-            System.out.println("[Client] Received " + object);
-            this.getWindow().getGamePanel().drawCard((Card) object);
         }
     }
 

@@ -7,7 +7,6 @@
 
 package poker.server;
 
-import poker.game.Deck;
 import poker.game.Game;
 import poker.game.Player;
 import poker.utils.Utils;
@@ -252,7 +251,7 @@ public class Server implements Runnable {
                 key.interestOps(SelectionKey.OP_READ);
 
                 try {
-                    Thread.sleep(5);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -364,11 +363,6 @@ public class Server implements Runnable {
                         String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
                         this.echo(name, Utils.getObjectAsBytes(action));
-                        break;
-                    case "card":
-                        name = JOptionPane.showInputDialog("[Server] Type player's name.");
-                        Deck deck = new Deck();
-                        this.echo(name, Utils.getObjectAsBytes(deck.dealCard()));
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");

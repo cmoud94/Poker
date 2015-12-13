@@ -70,10 +70,11 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void showPlayersInfo(ArrayList<Player> players, boolean showAllCards) {
-        for (int i = 0; i < players.size(); i++) {
-            this.playerPanels.add(new PlayerPanel(this, players.get(i), (i + 1), showAllCards, players.get(i).getName().equals(getClient().getName())));
-            this.add(this.playerPanels.get(i));
+    public void showPlayersInfo(Player player, boolean showCards) {
+        if (!this.playerPanels.contains(player)) {
+            PlayerPanel playerPanel = new PlayerPanel(this, player, (this.playerPanels.size() - 1), showCards, player.getName().equals(getClient().getName()));
+            this.playerPanels.add(playerPanel);
+            this.add(this.playerPanels.get(this.playerPanels.size() - 1));
         }
     }
 
@@ -169,7 +170,8 @@ public class GamePanel extends JPanel {
 
     public void drawCard(Card card) {
         JLabel label = new JLabel(card.getCardImage());
-        label.setBounds(cardWidth + 200, cardHeight + 100, cardWidth, cardHeight);
+        label.setBounds(this.getInsets().left, this.getInsets().top, cardWidth, cardHeight);
+        label.setVisible(true);
         this.add(label);
     }
 
