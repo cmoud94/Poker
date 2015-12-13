@@ -73,11 +73,9 @@ public class DataProcessor implements Runnable {
                     Thread gameLoopThread = new Thread(this.getParent().getGame(), "serverGameLoop");
                     gameLoopThread.start();
                 }
-            } else {
-                if (((String) object).contains("call") || ((String) object).contains("fold") || ((String) object).contains("bet") || ((String) object).contains("all-in")) {
-                    System.out.println("[Server] " + key.attachment() + ": " + object);
-                    this.getParent().setLastMessage((String) object);
-                }
+            } else if (object.equals("check") || object.equals("fold") || object.equals("call") || ((String) object).contains("bet") || object.equals("all-in")) {
+                System.out.println("[Server] " + key.attachment() + ": " + object);
+                this.getParent().setLastMessage((String) object);
             }
         }
     }

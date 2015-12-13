@@ -70,9 +70,7 @@ public class DataProcessor implements Runnable {
         } else if (object instanceof Table) {
             System.out.println("[Client] Received Table object");
             this.getParent().getWindow().getGamePanel().drawCommunityCards((Table) object);
-        } else if (object instanceof Integer) {
-            System.out.println("[Client] Received table pot");
-            this.getParent().getWindow().getGamePanel().updatePot((Integer) object);
+            this.getParent().getWindow().getGamePanel().updatePot(((Table) object).getPot());
         }
 
         /*else if (object instanceof Player) {

@@ -255,7 +255,7 @@ public class Server implements Runnable {
                 key.interestOps(SelectionKey.OP_READ);
 
                 try {
-                    Thread.sleep(200);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
