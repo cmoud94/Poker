@@ -48,9 +48,9 @@ class Run {
 
     private static void game_test() {
         Game game = new Game(3, 10, null);
-        Player p1 = new Player("Player_1", 1000);
-        Player p2 = new Player("Player_2", 1000);
-        Player p3 = new Player("Player_3", 1000);
+        Player p1 = new Player(1, "Player_1", 1000);
+        Player p2 = new Player(2, "Player_2", 1000);
+        Player p3 = new Player(3, "Player_3", 1000);
 
         game.getPlayers().add(p1);
         game.getPlayers().add(p2);
@@ -71,7 +71,7 @@ class Run {
             x++;
             Table table = new Table(10);
             Deck deck = new Deck();
-            Player p1 = new Player("Player 1", 1000);
+            Player p1 = new Player(1, "Player 1", 1000);
 
             p1.getCards().add(deck.dealCard());
             p1.getCards().add(deck.dealCard());
@@ -100,9 +100,9 @@ class Run {
 
         Table table = new Table(10);
         Deck deck = new Deck();
-        Player p1 = new Player("Player 1", 1000);
-        Player p2 = new Player("Player 2", 1000);
-        Player p3 = new Player("Player 3", 1000);
+        Player p1 = new Player(1, "Player 1", 1000);
+        Player p2 = new Player(2, "Player 2", 1000);
+        Player p3 = new Player(3, "Player 3", 1000);
 
         p1.getCards().add(deck.dealCard());
         p2.getCards().add(deck.dealCard());

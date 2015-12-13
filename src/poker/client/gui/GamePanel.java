@@ -11,6 +11,7 @@ import poker.client.Client;
 import poker.game.Card;
 import poker.game.Deck;
 import poker.game.Player;
+import poker.game.Table;
 import poker.utils.Utils;
 
 import javax.swing.*;
@@ -18,7 +19,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,13 +41,16 @@ public class GamePanel extends JPanel {
 
     private static List<JButton> actionButtons;
 
-    private final List<JPanel> playerPanels;
+    private static List<JPanel> playerPanels;
+
+    private static List<JLabel> communityCards;
 
     public GamePanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
         GamePanel.parent = parent;
         GamePanel.client = client;
         GamePanel.actionButtons = new ArrayList<>();
-        this.playerPanels = new ArrayList<>();
+        GamePanel.playerPanels = new ArrayList<>();
+        GamePanel.communityCards = new ArrayList<>();
 
         this.setBounds(x, y, width, height);
         this.setLayout(null);
@@ -62,7 +65,7 @@ public class GamePanel extends JPanel {
 
     public void showAvailableActions(ArrayList availableActions, int money) {
         slider.setMaximum(money - 10);
-        for (JButton button : this.actionButtons) {
+        for (JButton button : GamePanel.actionButtons) {
             if (availableActions.contains(button.getText())) {
                 button.setEnabled(true);
             } else {
@@ -77,11 +80,25 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void showPlayersInfo(Player player, boolean showCards) {
-        if (!this.playerPanels.contains(player)) {
-            PlayerPanel playerPanel = new PlayerPanel(this, player, (this.playerPanels.size() - 1), showCards, player.getName().equals(getClient().getName()));
-            this.playerPanels.add(playerPanel);
-            this.add(this.playerPanels.get(this.playerPanels.size() - 1));
+    public void showPlayerInfo(Player player, boolean showCards) {
+        System.out.println("[GamePanel] Showing player info");
+        if (!GamePanel.playerPanels.contains(player)) {
+            System.out.println("\t[GamePanel] Player not showed");
+            PlayerPanel playerPanel = new PlayerPanel(this, player, player.getID(), showCards, player.getName().equals(getClient().getName()));
+            GamePanel.playerPanels.add(playerPanel);
+            this.add(GamePanel.playerPanels.get(GamePanel.playerPanels.size() - 1));
+        }
+    }
+
+    public void drawCommunityCards(Table table) {
+        int communityCardsPosX = 253;
+        int communityCardsPosY = 207;
+
+        for (int i = 0; i < table.getCommunityCards().size(); i++) {
+            JLabel label = GamePanel.communityCards.get(i);
+            Card card = table.getCommunityCards().get(i);
+            label.setIcon(card.getCardImage());
+            label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
         }
     }
 
@@ -166,12 +183,13 @@ public class GamePanel extends JPanel {
         int communityCardsPosX = 253;
         int communityCardsPosY = 207;
 
-        BufferedImage cards = Utils.loadImage(this, "/poker/client/gui/img/cards.gif");
-        BufferedImage cardBackImage = Utils.getSubImage(cards, 0, 724, 125, 181);
+        /*BufferedImage cards = Utils.loadImage(this, "/poker/client/gui/img/cards.gif");
+        BufferedImage cardBackImage = Utils.getSubImage(cards, 0, 724, 125, 181);*/
 
         for (int i = 0; i < 5; i++) {
-            JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(cardBackImage, cardWidth, cardHeight));
+            JLabel label = new JLabel(); //Utils.getScaledImageAsImageIcon(cardBackImage, cardWidth, cardHeight)
             label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
+            GamePanel.communityCards.add(label);
             this.add(label);
         }
     }

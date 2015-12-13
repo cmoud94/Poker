@@ -7,8 +7,10 @@
 
 package poker.server;
 
+import poker.game.Deck;
 import poker.game.Game;
 import poker.game.Player;
+import poker.game.Table;
 import poker.utils.Utils;
 
 import javax.swing.*;
@@ -263,7 +265,7 @@ public class Server implements Runnable {
                 key.interestOps(SelectionKey.OP_READ);
 
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(150);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -318,14 +320,13 @@ public class Server implements Runnable {
 
                 key.attach(object);
 
-                Player player = new Player((String) object, this.getStartingMoney());
+                int id = this.getGame().getPlayers().size() + 1;
+                Player player = new Player(id, (String) object, this.getStartingMoney());
                 this.getGame().getPlayers().add(player);
 
                 if (this.getGame().getPlayers().size() == this.getGame().getNumOfPlayers()) {
                     this.getGame().init();
                 }
-
-                //this.echo(key, Utils.getObjectAsBytes(player));
             } else if (object.equals("yes")) {
                 Player player = this.getGame().getPlayerByPlayerName((String) key.attachment());
                 System.out.println("[Server] " + player.getName() + " is now ready to play");
@@ -382,6 +383,15 @@ public class Server implements Runnable {
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
                         this.broadcast(Utils.getObjectAsBytes(action));
+                        break;
+                    case "table":
+                        name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        Table table = new Table(10);
+                        Deck deck = new Deck();
+                        for (int i = 0; i < 3; i++) {
+                            table.getCommunityCards().add(deck.dealCard());
+                        }
+                        this.echo(name, Utils.getObjectAsBytes(table));
                         break;
                     default:
                         break;

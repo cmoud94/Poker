@@ -13,6 +13,8 @@ import java.util.List;
 
 public class Player implements Serializable {
 
+    private final int ID;
+
     private final String name;
 
     private final List<Card> cards;
@@ -33,7 +35,8 @@ public class Player implements Serializable {
 
     private Blind blind;
 
-    public Player(String name, int money) {
+    public Player(int ID, String name, int money) {
+        this.ID = ID;
         this.name = name;
         this.cards = new ArrayList<>(2);
         this.money = money;
@@ -44,6 +47,10 @@ public class Player implements Serializable {
         this.hasToCall = false;
         this.hasAllIn = false;
         this.blind = Blind.NO_BLIND;
+    }
+
+    public int getID() {
+        return ID;
     }
 
     public String getName() {

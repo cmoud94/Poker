@@ -9,6 +9,7 @@ package poker.client;
 
 import poker.client.gui.ClientWindow;
 import poker.game.Player;
+import poker.game.Table;
 import poker.utils.Utils;
 
 import javax.swing.*;
@@ -286,7 +287,10 @@ public class Client implements Runnable {
         } else if (object instanceof Player) {
             System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
             this.setPlayer((Player) object);
-            this.getWindow().getGamePanel().showPlayersInfo((Player) object, false);
+            this.getWindow().getGamePanel().showPlayerInfo((Player) object, false);
+        } else if (object instanceof Table) {
+            System.out.println("[Client] Received Table object");
+            this.getWindow().getGamePanel().drawCommunityCards((Table) object);
         }
     }
 
