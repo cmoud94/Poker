@@ -9,7 +9,6 @@ package poker.client;
 
 import poker.client.gui.ClientWindow;
 import poker.game.Player;
-import poker.game.Table;
 import poker.utils.Utils;
 
 import javax.swing.*;
@@ -21,7 +20,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -56,7 +54,7 @@ public class Client implements Runnable {
         this.socketChannel = null;
         this.selector = null;
         this.pendingData = new HashMap<>();
-        this.buffSize = 65568;
+        this.buffSize = 131136;
         this.name = "default";
         this.player = null;
         this.window = window;
@@ -118,7 +116,7 @@ public class Client implements Runnable {
         this.player = player;
     }
 
-    private ClientWindow getWindow() {
+    public ClientWindow getWindow() {
         return window;
     }
 
@@ -239,7 +237,10 @@ public class Client implements Runnable {
             byte[] data = new byte[this.getBuffSize()];
             readBuffer.get(data, 0, read);
 
-            this.processData(key, data);
+            //this.processData(key, data);
+
+            Thread dataProcessor = new Thread(new DataProcessor(this, key, data));
+            dataProcessor.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -269,13 +270,15 @@ public class Client implements Runnable {
         }
     }
 
-    private void processData(SelectionKey key, byte[] data) {
+    /*private void processData(SelectionKey key, byte[] data) {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {
             if (object.equals("[Game] Are you ready?")) {
                 System.out.println("[Client] " + object);
                 this.getWindow().getConnectionPanel().serverReady();
+            } else if (object.equals("new-round")) {
+                this.getWindow().getGamePanel().newRound();
             } else {
                 System.out.println("[Client] " + key.attachment() + ": " + object);
             }
@@ -292,7 +295,7 @@ public class Client implements Runnable {
             System.out.println("[Client] Received Table object");
             this.getWindow().getGamePanel().drawCommunityCards((Table) object);
         }
-    }
+    }*/
 
     public void sendData(byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
@@ -336,188 +339,5 @@ public class Client implements Runnable {
             }
         }
     }
-
-    // TODO: Smazat
-    /*public void connect(String address, int port) {
-        this.setPort(port);
-
-        try {
-            this.setAddress(new InetSocketAddress(InetAddress.getByName(address), this.getPort()));
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            this.setSc(SocketChannel.open());
-            this.getSc().configureBlocking(false);
-            this.getSc().connect(this.getAddress());
-
-            this.setSelector(Selector.open());
-
-            while (true) {
-                if (this.getSc().finishConnect()) {
-                    break;
-                }
-            }
-
-            System.out.println("[Client] Connected");
-            if (this.getWindow() != null) {
-                this.getWindow().getConnectionPanel().clientConnected();
-            }
-            this.getSc().write(ByteBuffer.wrap(Utils.getObjectAsBytes(this.getName())));
-            this.getSc().register(this.getSelector(), SelectionKey.OP_READ);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void clientLoop() {
-        if (this.getSc().isOpen()) {
-            System.out.println("[Client] Entered main loop");
-
-            Iterator<SelectionKey> iterator;
-            SelectionKey key;
-
-            while (this.getSc().isOpen()) {
-                try {
-                    this.getSelector().select();
-                    iterator = this.getSelector().selectedKeys().iterator();
-
-                    while (iterator.hasNext()) {
-                        key = iterator.next();
-                        iterator.remove();
-
-                        if (!key.isValid()) {
-                            System.out.println("[Client] Invalid key");
-                            continue;
-                        }
-
-                        if (key.isConnectable()) {
-                            System.out.println("[Client] Connectable.");
-                        } else if (key.isReadable()) {
-                            System.out.println("[Client] Readable.");
-                            this.handleRead(key);
-                        } else if (key.isWritable()) {
-                            System.out.println("[Client] Writeable.");
-                        }
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    public void disconnect() {
-        if (this.getSc() != null && this.getSc().isOpen()) {
-            try {
-                this.getSc().close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            System.out.println("[Client] Disconnected");
-            if (this.getWindow() != null) {
-                this.getWindow().getConnectionPanel().clientDisconnected();
-            }
-        }
-    }
-
-    private void handleRead(SelectionKey key) {
-        SocketChannel sc = (SocketChannel) key.channel();
-        ByteBuffer buffer = ByteBuffer.allocate(this.getBuffSize());
-        byte[] finalBytes = new byte[0];
-        int readBytes;
-
-        buffer.clear();
-        try {
-            while ((readBytes = sc.read(buffer)) > 0) {
-                buffer.flip();
-                byte[] bytes = new byte[buffer.limit()];
-                buffer.get(bytes);
-                finalBytes = Utils.concatByteArrays(finalBytes, bytes);
-                buffer.clear();
-            }
-
-            if (readBytes < 0) {
-                System.out.println("[Client] Server disconnected");
-                if (this.getWindow() != null) {
-                    this.getWindow().getConnectionPanel().serverDisconnected();
-                }
-                key.cancel();
-                sc.close();
-            }
-
-            if (finalBytes.length > 0) {
-                Object object = Utils.getBytesAsObject(finalBytes);
-
-                if (object != null) {
-                    this.processData(finalBytes);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            key.cancel();
-            try {
-                sc.close();
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-    }
-
-    private void processData(byte[] bytes) {
-        Object object = Utils.getBytesAsObject(bytes);
-
-        System.out.println("[Client] Received data from server");
-
-        if (object instanceof String) {
-
-            System.out.println("\t" + object);
-            if (object.equals("[Game] " + this.getName() + " - Are you ready?") && this.getWindow() != null) {
-                this.getWindow().getConnectionPanel().serverReady();
-            }
-
-        } else if (object instanceof List) {
-
-            System.out.println("\t" + object.toString());
-
-            if (this.getWindow() != null) {
-                this.getWindow().getGamePanel().showPlayerAvailableAction((List<String>) object, this.getPlayer().getMoney());
-            }
-
-        } else if (object instanceof Table) {
-
-            System.out.println("\tIn pot: " + ((Table) object).getPot());
-            System.out.println("\tCommunity cards:");
-            ((Table) object).printCommunityCards();
-
-            if (this.getWindow() != null) {
-                this.getWindow().getGamePanel().drawCommunityCards(((Table) object).getCommunityCards());
-            }
-
-        } else if (object instanceof Player) {
-            if (((Player) object).getName().equals(this.getName())) {
-                this.setPlayer((Player) object);
-                System.out.println("\tName: " + this.getPlayer().getName() + " money: " + this.getPlayer().getMoney());
-                System.out.println("\tYour cards:");
-                this.getPlayer().printCards();
-            }
-
-        }
-    }
-
-    public void sendMessage(byte[] bytes) {
-        try {
-            ByteBuffer buffer = ByteBuffer.wrap(bytes);
-
-            this.getSc().write(buffer);
-            buffer.clear();
-
-            System.out.println("[Client] Data sent");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
 
 }

@@ -9,7 +9,6 @@ package poker.client.gui;
 
 import poker.client.Client;
 import poker.game.Card;
-import poker.game.Deck;
 import poker.game.Player;
 import poker.game.Table;
 import poker.utils.Utils;
@@ -63,6 +62,13 @@ public class GamePanel extends JPanel {
         return client;
     }
 
+    public void newRound() {
+        for (JLabel label : GamePanel.communityCards) {
+            label.setIcon(null);
+        }
+        disableActions();
+    }
+
     public void showAvailableActions(ArrayList availableActions, int money) {
         slider.setMaximum(money - 10);
         for (JButton button : GamePanel.actionButtons) {
@@ -103,37 +109,12 @@ public class GamePanel extends JPanel {
     }
 
     private void initComponents() {
-        // Player panel
-        /*Player player = new Player("Player", 1000);
-        player.setBlind(Player.Blind.NO_BLIND);
-
-        Deck deck = new Deck();
-        player.getCards().add(deck.dealCard());
-        player.getCards().add(deck.dealCard());
-
-        PlayerPanel playerPanel1 = new PlayerPanel(this, player, 1, true, true);
-        this.add(playerPanel1);
-
-        PlayerPanel playerPanel2 = new PlayerPanel(this, player, 2, false, false);
-        this.add(playerPanel2);
-
-        PlayerPanel playerPanel3 = new PlayerPanel(this, player, 3, true, false);
-        this.add(playerPanel3);
-
-        PlayerPanel playerPanel4 = new PlayerPanel(this, player, 4, true, false);
-        this.add(playerPanel4);
-
-        PlayerPanel playerPanel5 = new PlayerPanel(this, player, 5, true, false);
-        this.add(playerPanel5);
-
-        PlayerPanel playerPanel6 = new PlayerPanel(this, player, 6, true, false);
-        this.add(playerPanel6);
-
-        PlayerPanel playerPanel7 = new PlayerPanel(this, player, 7, true, false);
-        this.add(playerPanel7);
-
-        PlayerPanel playerPanel8 = new PlayerPanel(this, player, 8, true, false);
-        this.add(playerPanel8);*/
+        // Players
+        for (int i = 0; i < 8; i++) {
+            PlayerPanel playerPanel = new PlayerPanel(this, null, (i + 1), false, false);
+            GamePanel.playerPanels.add(playerPanel);
+            this.add(playerPanel);
+        }
 
         // Community cards
         this.initCommunityCards();
@@ -194,14 +175,7 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void drawCard(Card card) {
-        JLabel label = new JLabel(card.getCardImage());
-        label.setBounds(this.getInsets().left, this.getInsets().top, cardWidth, cardHeight);
-        label.setVisible(true);
-        this.add(label);
-    }
-
-    public void drawAllCards(Deck deck) {
+    /*public void drawAllCards(Deck deck) {
         deck = (deck == null) ? new Deck() : deck;
         ImageIcon cardBackImage = null;
 
@@ -221,7 +195,7 @@ public class GamePanel extends JPanel {
         JLabel cardBack = new JLabel(cardBackImage);
         cardBack.setBounds(75, 100 + 4 * cardHeight, cardWidth, cardHeight);
         this.add(cardBack);
-    }
+    }*/
 
     static class buttonPlayerActionsListener implements ActionListener {
 

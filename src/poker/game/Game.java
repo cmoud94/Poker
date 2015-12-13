@@ -323,6 +323,8 @@ public class Game implements Runnable {
             System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | Cards: " +
                     player.getCards().get(0).toString() + " && " +
                     player.getCards().get(1).toString() + " | Money: " + player.getMoney());
+
+            this.getServer().echo(player.getName(), Utils.getObjectAsBytes("new-round"));
         }
         System.out.println();
     }
