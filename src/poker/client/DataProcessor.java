@@ -72,12 +72,6 @@ public class DataProcessor implements Runnable {
             this.getParent().getWindow().getGamePanel().drawCommunityCards((Table) object);
             this.getParent().getWindow().getGamePanel().updatePot(((Table) object).getPot());
         }
-
-        /*else if (object instanceof Player) {
-            System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
-            this.getParent().setPlayer((Player) object);
-            //this.getParent().getWindow().getGamePanel().drawPlayer((Player) object);
-        }*/
     }
 
     @Override

@@ -269,33 +269,6 @@ public class Client implements Runnable {
         }
     }
 
-    /*private void processData(SelectionKey key, byte[] data) {
-        Object object = Utils.getBytesAsObject(data);
-
-        if (object instanceof String) {
-            if (object.equals("[Game] Are you ready?")) {
-                System.out.println("[Client] " + object);
-                this.getWindow().getConnectionPanel().serverReady();
-            } else if (object.equals("new-round")) {
-                this.getWindow().getGamePanel().newRound();
-            } else {
-                System.out.println("[Client] " + key.attachment() + ": " + object);
-            }
-        } else if (object instanceof ArrayList) {
-            if (((ArrayList) object).get(0) instanceof String) {
-                System.out.println("[Client] Available actions: " + object);
-                this.getWindow().getGamePanel().showAvailableActions((ArrayList) object, this.getPlayer().getMoney());
-            }
-        } else if (object instanceof Player) {
-            System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
-            this.setPlayer((Player) object);
-            this.getWindow().getGamePanel().showPlayerInfo((Player) object, false);
-        } else if (object instanceof Table) {
-            System.out.println("[Client] Received Table object");
-            this.getWindow().getGamePanel().drawCommunityCards((Table) object);
-        }
-    }*/
-
     public void sendData(byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
