@@ -114,6 +114,15 @@ public class GamePanel extends JPanel {
 
     public void updatePot(int money) {
         pot.setText("Pot: " + money);
+        pot.setPreferredSize(pot.getPreferredSize());
+
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        pot.setText("Pot: " + money);
     }
 
     private void initComponents() {

@@ -228,12 +228,16 @@ public class Game implements Runnable {
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.SMALL_BLIND && !smallBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind() / 2);
                             smallBlind = true;
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable().getPot()));
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                             continue;
                         }
 
                         if (this.getPlayers().get(i).getBlind() == Player.Blind.BIG_BLIND && !bigBlind) {
                             this.actionBetBlind(this.getPlayers().get(i), this.getTable().getBigBlind());
                             bigBlind = true;
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable().getPot()));
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                             continue;
                         }
 
@@ -275,6 +279,9 @@ public class Game implements Runnable {
                                 }
                             }
                         } while (!this.handleAction(action, this.getPlayers().get(i), money));
+
+                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable().getPot()));
+                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                     }
                 } else {
                     System.out.println(this.getPlayers().get(i).getName() + " not playing this round.");
