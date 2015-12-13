@@ -45,6 +45,8 @@ public class Server implements Runnable {
 
     private String lastMessage;
 
+    private final List<String> gameActions;
+
     public Server(int port, int numOfPlayers, int bigBlind, int startingMoney) {
         this.port = port;
         this.serverSocketChannel = null;
@@ -56,6 +58,12 @@ public class Server implements Runnable {
         this.startingMoney = startingMoney;
         this.gameRunning = false;
         this.lastMessage = "";
+        this.gameActions = new ArrayList<>();
+        this.gameActions.add("check");
+        this.gameActions.add("fold");
+        this.gameActions.add("call");
+        this.gameActions.add("bet");
+        this.gameActions.add("all-in");
     }
 
     public int getPort() {
@@ -116,6 +124,10 @@ public class Server implements Runnable {
 
     public void setLastMessage(String lastMessage) {
         this.lastMessage = lastMessage;
+    }
+
+    public List<String> getGameActions() {
+        return gameActions;
     }
 
     public void init() {
@@ -251,7 +263,7 @@ public class Server implements Runnable {
                 key.interestOps(SelectionKey.OP_READ);
 
                 try {
-                    Thread.sleep(10);
+                    Thread.sleep(50);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -309,11 +321,11 @@ public class Server implements Runnable {
                 Player player = new Player((String) object, this.getStartingMoney());
                 this.getGame().getPlayers().add(player);
 
-                this.echo(key, Utils.getObjectAsBytes(player));
-
                 if (this.getGame().getPlayers().size() == this.getGame().getNumOfPlayers()) {
                     this.getGame().init();
                 }
+
+                //this.echo(key, Utils.getObjectAsBytes(player));
             } else if (object.equals("yes")) {
                 Player player = this.getGame().getPlayerByPlayerName((String) key.attachment());
                 System.out.println("[Server] " + player.getName() + " is now ready to play");
@@ -334,6 +346,9 @@ public class Server implements Runnable {
                     Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
                     gameLoopThread.start();
                 }
+            } else if (this.getGameActions().contains(object)) {
+                System.out.println("[Server] Received action " + object + " from " + key.attachment());
+                this.setLastMessage((String) object);
             } else {
                 System.out.println("[Server] " + key.attachment() + " said: " + object);
                 this.echo(key, data);

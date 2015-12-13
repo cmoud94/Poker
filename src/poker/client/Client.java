@@ -284,12 +284,9 @@ public class Client implements Runnable {
                 this.getWindow().getGamePanel().showAvailableActions((ArrayList) object, this.getPlayer().getMoney());
             }
         } else if (object instanceof Player) {
-            if (this.getPlayer() == null) {
-                System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
-                this.setPlayer((Player) object);
-            } else {
-                this.getWindow().getGamePanel().showPlayersInfo((Player) object, false);
-            }
+            System.out.println("[Client] Received Player object (" + ((Player) object).getName() + ", " + ((Player) object).getMoney() + ")");
+            this.setPlayer((Player) object);
+            this.getWindow().getGamePanel().showPlayersInfo((Player) object, false);
         }
     }
 

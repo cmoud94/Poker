@@ -39,14 +39,14 @@ public class GamePanel extends JPanel {
 
     private final int chipSize = 40;
 
-    private final List<JButton> actionButtons;
+    private static List<JButton> actionButtons;
 
     private final List<JPanel> playerPanels;
 
     public GamePanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
         GamePanel.parent = parent;
         GamePanel.client = client;
-        this.actionButtons = new ArrayList<>();
+        GamePanel.actionButtons = new ArrayList<>();
         this.playerPanels = new ArrayList<>();
 
         this.setBounds(x, y, width, height);
@@ -61,12 +61,19 @@ public class GamePanel extends JPanel {
     }
 
     public void showAvailableActions(ArrayList availableActions, int money) {
+        slider.setMaximum(money - 10);
         for (JButton button : this.actionButtons) {
             if (availableActions.contains(button.getText())) {
                 button.setEnabled(true);
             } else {
                 button.setEnabled(false);
             }
+        }
+    }
+
+    public static void disableActions() {
+        for (JButton button : GamePanel.actionButtons) {
+            button.setEnabled(false);
         }
     }
 
@@ -125,12 +132,13 @@ public class GamePanel extends JPanel {
 
     private void initAvailableActionsButtons() {
         List<String> buttonActions = new ArrayList<>();
+        buttonActions.add("check");
         buttonActions.add("fold");
         buttonActions.add("call");
         buttonActions.add("bet");
         buttonActions.add("all-in");
 
-        int actionsPosX = 175;
+        int actionsPosX = 120;
         int actionsPosY = this.getHeight() - 100;
         int buttonWidth = 100;
         int buttonHeight = 30;
@@ -140,7 +148,7 @@ public class GamePanel extends JPanel {
             button.setActionCommand(button.getText());
             button.setBounds(i * buttonWidth + actionsPosX + (i * 10), actionsPosY, buttonWidth, buttonHeight);
             button.setEnabled(false);
-            this.actionButtons.add(button);
+            GamePanel.actionButtons.add(button);
             this.add(button);
             button.addActionListener(new buttonPlayerActionsListener());
         }
@@ -202,25 +210,30 @@ public class GamePanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             switch (actionEvent.getActionCommand()) {
+                case "check":
+                    //System.out.println("[GamePanel] check triggered");
+                    getClient().sendData(Utils.getObjectAsBytes("check"));
+                    break;
                 case "fold":
-                    System.out.println("[GamePanel] fold triggered");
+                    //System.out.println("[GamePanel] fold triggered");
                     getClient().sendData(Utils.getObjectAsBytes("fold"));
                     break;
                 case "call":
-                    System.out.println("[GamePanel] call triggered");
+                    //System.out.println("[GamePanel] call triggered");
                     getClient().sendData(Utils.getObjectAsBytes("call"));
                     break;
                 case "bet":
-                    System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
+                    //System.out.println("[GamePanel] bet triggered with value of " + slider.getValue());
                     getClient().sendData(Utils.getObjectAsBytes("bet" + String.valueOf(slider.getValue())));
                     break;
                 case "all-in":
-                    System.out.println("[GamePanel] all-in triggered");
+                    //System.out.println("[GamePanel] all-in triggered");
                     getClient().sendData(Utils.getObjectAsBytes("all-in"));
                     break;
                 default:
                     break;
             }
+            GamePanel.disableActions();
         }
 
     }

@@ -79,7 +79,7 @@ public class ConnectionPanel extends JPanel {
         this.add(textFieldAddress);
         posY += itemHeight;
 
-        //TODO: Smazat!!!
+        // Default address
         textFieldAddress.setText("localhost:9999");
 
         JLabel labelName = new JLabel("Name");
@@ -156,7 +156,6 @@ public class ConnectionPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
-            System.out.println("[ConnectionPanel] Ready to play");
             labelPlayerReady.setVisible(false);
             buttonReady.setVisible(false);
             getClient().sendData(Utils.getObjectAsBytes("yes"));

@@ -188,6 +188,7 @@ public class Game implements Runnable {
         }
 
         for (Player player : this.getPlayers()) {
+            System.out.println("[Game] Sending Player object to " + player.getName());
             this.getServer().echo(player.getName(), Utils.getObjectAsBytes(player));
         }
     }
