@@ -9,6 +9,7 @@ package poker.game;
 
 import poker.utils.Utils;
 
+import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -19,17 +20,22 @@ public class Deck implements Serializable {
 
     private final List<Card> deck;
 
+    // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
+    private final int cardWidth = 50;
+
+    private final int cardHeight = 72;
+
     public Deck() {
         // Create the Deck of Cards
         this.deck = new ArrayList<>();
 
         BufferedImage cards = Utils.loadImage(this, "/poker/client/gui/img/cards.gif");
-        BufferedImage cardBackImage = Utils.getSubImage(cards, 0, 724, 125, 181);
+        ImageIcon cardBackImage = Utils.getScaledImageAsImageIcon(Utils.getSubImage(cards, 0, 724, 125, 181), cardWidth, cardHeight);
 
         for (int s = 0; s < Card.getSuits().length; s++) {
             for (int r = 0; r < Card.getRanks().length; r++) {
                 // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735
-                BufferedImage cardImage = Utils.getSubImage(cards, r * 125, s * 181, 125, 181);
+                ImageIcon cardImage = Utils.getScaledImageAsImageIcon(Utils.getSubImage(cards, r * 125, s * 181, 125, 181), cardWidth, cardHeight);
                 this.getDeck().add(new Card(s, r, cardImage, cardBackImage));
             }
         }

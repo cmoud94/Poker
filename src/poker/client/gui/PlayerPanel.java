@@ -34,7 +34,7 @@ public class PlayerPanel extends JPanel {
 
     private final int chipSize = 40;
 
-    public PlayerPanel(GamePanel parent, Player player, int type, boolean showCards) {
+    public PlayerPanel(GamePanel parent, Player player, int type, boolean showCards, boolean client) {
         this.type = type;
         this.parent = parent;
         this.player = player;
@@ -44,9 +44,8 @@ public class PlayerPanel extends JPanel {
         this.setSize(200, 150);
         this.setLayout(null);
         this.setOpaque(true);
-        this.initComponents(showCards);
-
-        System.out.println("[PlayerPanel] Done!");
+        this.setBackground(new Color(0, 0, 0, 0));
+        this.initComponents(showCards, client);
     }
 
     public int getType() {
@@ -78,7 +77,7 @@ public class PlayerPanel extends JPanel {
         }
     }
 
-    private void initComponents(boolean showCards) {
+    private void initComponents(boolean showCards, boolean client) {
         // Blind chips
         chips.add(new JLabel(""));
         chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
@@ -99,35 +98,78 @@ public class PlayerPanel extends JPanel {
         JLabel card2;
 
         if (showCards) {
-            card1 = new JLabel(Utils.getScaledImageAsImageIcon(player.getCards().get(0).getCardImage(), cardWidth, cardHeight));
-            card2 = new JLabel(Utils.getScaledImageAsImageIcon(player.getCards().get(1).getCardImage(), cardWidth, cardHeight));
+            card1 = new JLabel(player.getCards().get(0).getCardImage());
+            card2 = new JLabel(player.getCards().get(1).getCardImage());
         } else {
-            card1 = card2 = new JLabel(Utils.getScaledImageAsImageIcon(player.getCards().get(1).getCardBackImage(), cardWidth, cardHeight));
+            card1 = new JLabel(player.getCards().get(0).getCardBackImage());
+            card2 = new JLabel(player.getCards().get(1).getCardBackImage());
         }
 
         JLabel name = new JLabel(this.getPlayer().getName() + " (" + this.getPlayer().getMoney() + ")");
+        name.setFont(new Font("Sans", Font.BOLD, 12));
+        name.setOpaque(true);
+        if (client) {
+            name.setBackground(new Color(0, 255, 255, 200));
+        } else {
+            name.setBackground(Color.LIGHT_GRAY);
+        }
 
         switch (this.getType()) {
             case 1:
-                this.setLocation(parent.getInsets().left + 72, parent.getInsets().top + 350);
+                this.setLocation(parent.getInsets().left + 72, parent.getInsets().top + 340);
                 card1.setBounds(0, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, 0, cardWidth, cardHeight);
-                name.setFont(new Font("Sans", Font.BOLD, 12));
                 name.setBounds(0, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, chipSize / 2);
+                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, 20);
                 break;
             case 2:
+                this.setLocation(parent.getInsets().left + 5, parent.getInsets().top + 200);
+                card1.setBounds(0, 0, cardWidth, cardHeight);
+                card2.setBounds(cardWidth + 5, 0, cardWidth, cardHeight);
+                name.setBounds(0, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
+                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, 40);
                 break;
             case 3:
+                this.setLocation(parent.getInsets().left + 72, parent.getInsets().top + 50);
+                name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
+                card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
+                card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
+                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, 100);
                 break;
             case 4:
+                this.setLocation(parent.getInsets().left + 250, parent.getInsets().top + 20);
+                name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
+                card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
+                card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
+                this.setChipPosition(String.valueOf(player.getBlind()), cardWidth + (chipSize / 2) - 5, name.getHeight() + cardHeight + (chipSize / 2) + 5);
+                break;
             case 5:
+                this.setLocation(parent.getInsets().left + 430, parent.getInsets().top + 20);
+                name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
+                card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
+                card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
+                this.setChipPosition(String.valueOf(player.getBlind()), cardWidth + (chipSize / 2) - 10, name.getHeight() + cardHeight + (chipSize / 2) + 5);
                 break;
             case 6:
+                this.setLocation(parent.getInsets().left + 580, parent.getInsets().top + 40);
+                name.setBounds(chipSize + 5, 0, name.getPreferredSize().width, name.getPreferredSize().height);
+                card1.setBounds(chipSize + 5, name.getHeight() + 5, cardWidth, cardHeight);
+                card2.setBounds(chipSize + cardWidth + 10, name.getHeight() + 5, cardWidth, cardHeight);
+                this.setChipPosition(String.valueOf(player.getBlind()), 30, name.getHeight() + cardHeight + 20);
                 break;
             case 7:
+                this.setLocation(parent.getInsets().left + 620, parent.getInsets().top + 200);
+                card1.setBounds(chipSize + 5, 0, cardWidth, cardHeight);
+                card2.setBounds(chipSize + 10 + cardWidth, 0, cardWidth, cardHeight);
+                name.setBounds(chipSize + 5, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
+                this.setChipPosition(String.valueOf(player.getBlind()), 20, 40);
                 break;
             case 8:
+                this.setLocation(parent.getInsets().left + 550, parent.getInsets().top + 340);
+                card1.setBounds(chipSize + 5, 0, cardWidth, cardHeight);
+                card2.setBounds(cardWidth + 10 + chipSize, 0, cardWidth, cardHeight);
+                name.setBounds(chipSize + 5, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
+                this.setChipPosition(String.valueOf(player.getBlind()), 20, 20);
                 break;
         }
 

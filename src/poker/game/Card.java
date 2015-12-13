@@ -7,7 +7,7 @@
 
 package poker.game;
 
-import java.awt.image.BufferedImage;
+import javax.swing.*;
 import java.io.Serializable;
 
 public class Card implements Serializable {
@@ -20,11 +20,11 @@ public class Card implements Serializable {
 
     private final int rank;
 
-    private final BufferedImage cardImage;
+    private final ImageIcon cardImage;
 
-    private final BufferedImage cardBackImage;
+    private final ImageIcon cardBackImage;
 
-    public Card(int suit, int rank, BufferedImage cardImage, BufferedImage cardBackImage) {
+    public Card(int suit, int rank, ImageIcon cardImage, ImageIcon cardBackImage) {
         this.suit = suit;
         this.rank = rank + 2;
         this.cardImage = cardImage;
@@ -47,11 +47,11 @@ public class Card implements Serializable {
         return rank;
     }
 
-    public BufferedImage getCardImage() {
+    public ImageIcon getCardImage() {
         return cardImage;
     }
 
-    public BufferedImage getCardBackImage() {
+    public ImageIcon getCardBackImage() {
         return cardBackImage;
     }
 

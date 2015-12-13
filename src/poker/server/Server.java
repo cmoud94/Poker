@@ -7,6 +7,7 @@
 
 package poker.server;
 
+import poker.game.Deck;
 import poker.game.Game;
 import poker.game.Player;
 import poker.utils.Utils;
@@ -50,7 +51,7 @@ public class Server implements Runnable {
         this.serverSocketChannel = null;
         this.selector = null;
         this.pendingData = new HashMap<>();
-        this.buffSize = 8192;
+        this.buffSize = 65568;
         this.serverRunning = false;
         this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
@@ -362,16 +363,12 @@ public class Server implements Runnable {
                     case "send":
                         String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.echo(name, Utils.getObjectAsBytes("1. " + action));
-                        this.echo(name, Utils.getObjectAsBytes("2. " + action));
-                        this.echo(name, Utils.getObjectAsBytes("3. " + action));
-                        this.echo(name, Utils.getObjectAsBytes("4. " + action));
-                        this.echo(name, Utils.getObjectAsBytes("5. " + action));
-                        break;
-                    case "send_2":
-                        name = JOptionPane.showInputDialog("[Server] Type player's name.");
-                        action = JOptionPane.showInputDialog("[Server] Type your message.");
                         this.echo(name, Utils.getObjectAsBytes(action));
+                        break;
+                    case "card":
+                        name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        Deck deck = new Deck();
+                        this.echo(name, Utils.getObjectAsBytes(deck.dealCard()));
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");

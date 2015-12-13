@@ -8,6 +8,7 @@
 package poker.client;
 
 import poker.client.gui.ClientWindow;
+import poker.game.Card;
 import poker.game.Player;
 import poker.utils.Utils;
 
@@ -55,7 +56,7 @@ public class Client implements Runnable {
         this.socketChannel = null;
         this.selector = null;
         this.pendingData = new HashMap<>();
-        this.buffSize = 8192;
+        this.buffSize = 65568;
         this.name = "default";
         this.player = null;
         this.window = window;
@@ -283,7 +284,7 @@ public class Client implements Runnable {
                 System.out.println("[Client] Available actions: " + object);
                 this.getWindow().getGamePanel().showAvailableActions((ArrayList) object, this.getPlayer().getMoney());
             } else if (((ArrayList) object).get(0) instanceof Player) {
-                this.getWindow().getGamePanel().showPlayersInfo((ArrayList) object);
+                this.getWindow().getGamePanel().showPlayersInfo((ArrayList<Player>) object, false);
             }
         } else if (object instanceof Player) {
             if (this.getPlayer() == null) {
@@ -292,6 +293,9 @@ public class Client implements Runnable {
             } else if (this.getName().equals(((Player) object).getName())) {
                 this.setPlayer((Player) object);
             }
+        } else if (object instanceof Card) {
+            System.out.println("[Client] Received " + object);
+            this.getWindow().getGamePanel().drawCard((Card) object);
         }
     }
 

@@ -70,23 +70,45 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void showPlayersInfo(ArrayList<Player> players) {
+    public void showPlayersInfo(ArrayList<Player> players, boolean showAllCards) {
         for (int i = 0; i < players.size(); i++) {
-            this.playerPanels.add(new PlayerPanel(this, players.get(i), (i + 1), players.get(i).getName().equals(getClient().getName())));
+            this.playerPanels.add(new PlayerPanel(this, players.get(i), (i + 1), showAllCards, players.get(i).getName().equals(getClient().getName())));
+            this.add(this.playerPanels.get(i));
         }
     }
 
     private void initComponents() {
         // Player panel
-        Player player = new Player("Kokot", 1000);
-        player.setBlind(Player.Blind.DEALER);
+        /*Player player = new Player("Player", 1000);
+        player.setBlind(Player.Blind.NO_BLIND);
 
         Deck deck = new Deck();
         player.getCards().add(deck.dealCard());
         player.getCards().add(deck.dealCard());
 
-        PlayerPanel playerPanel = new PlayerPanel(this, player, 1, true);
-        this.add(playerPanel);
+        PlayerPanel playerPanel1 = new PlayerPanel(this, player, 1, true, true);
+        this.add(playerPanel1);
+
+        PlayerPanel playerPanel2 = new PlayerPanel(this, player, 2, false, false);
+        this.add(playerPanel2);
+
+        PlayerPanel playerPanel3 = new PlayerPanel(this, player, 3, true, false);
+        this.add(playerPanel3);
+
+        PlayerPanel playerPanel4 = new PlayerPanel(this, player, 4, true, false);
+        this.add(playerPanel4);
+
+        PlayerPanel playerPanel5 = new PlayerPanel(this, player, 5, true, false);
+        this.add(playerPanel5);
+
+        PlayerPanel playerPanel6 = new PlayerPanel(this, player, 6, true, false);
+        this.add(playerPanel6);
+
+        PlayerPanel playerPanel7 = new PlayerPanel(this, player, 7, true, false);
+        this.add(playerPanel7);
+
+        PlayerPanel playerPanel8 = new PlayerPanel(this, player, 8, true, false);
+        this.add(playerPanel8);*/
 
         // Community cards
         this.initCommunityCards();
@@ -145,19 +167,25 @@ public class GamePanel extends JPanel {
         }
     }
 
-    private void drawAllCards() {
-        Deck deck = new Deck();
+    public void drawCard(Card card) {
+        JLabel label = new JLabel(card.getCardImage());
+        label.setBounds(cardWidth + 200, cardHeight + 100, cardWidth, cardHeight);
+        this.add(label);
+    }
+
+    public void drawAllCards(Deck deck) {
+        deck = (deck == null) ? new Deck() : deck;
         ImageIcon cardBackImage = null;
 
         for (int i = 0; i < Card.getSuits().length; i++) {
             for (int j = 0; j < Card.getRanks().length; j++) {
                 Card card = deck.dealCard();
-                JLabel label = new JLabel(Utils.getScaledImageAsImageIcon(card.getCardImage(), cardWidth, cardHeight));
+                JLabel label = new JLabel(card.getCardImage());
                 label.setBounds(j * cardWidth + 75, i * cardHeight + 100, cardWidth, cardHeight);
                 this.add(label);
 
                 if (cardBackImage == null) {
-                    cardBackImage = Utils.getScaledImageAsImageIcon(card.getCardBackImage(), cardWidth, cardHeight);
+                    cardBackImage = card.getCardBackImage();
                 }
             }
         }
