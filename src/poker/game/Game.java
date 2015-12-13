@@ -399,8 +399,7 @@ public class Game implements Runnable {
             player.setMoney(player.getMoney() + player.getInPot());
             System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ". Has all-in so selecting other winners.");
 
-            /*this.getServer().setLastMessage("winner-all-in");
-            this.getServer().broadcast(Utils.getObjectAsBytes(winners));*/
+            //this.getServer().broadcast(Utils.getObjectAsBytes(winners));
 
             this.getTable().setPot(this.getTable().getPot() - player.getInPot());
             this.getPlayers().get(this.getPlayers().indexOf(winners.get(0).getPlayer())).setPlaying(false);
@@ -412,8 +411,7 @@ public class Game implements Runnable {
             player.setMoney(player.getMoney() + this.getTable().getPot());
             System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ".");
 
-            /*this.getServer().setLastMessage("winner");
-            this.getServer().broadcast(Utils.getObjectAsBytes(winners));*/
+            //this.getServer().broadcast(Utils.getObjectAsBytes(winners));
         } else {
             int money = this.getTable().getPot() / winners.size();
             System.out.println("We have " + winners.size() + " winners.");
@@ -423,8 +421,7 @@ public class Game implements Runnable {
                 this.getTable().setPot(this.getTable().getPot() - money);
             }
 
-            /*this.getServer().setLastMessage("winners");
-            this.getServer().broadcast(Utils.getObjectAsBytes(winners));*/
+            //this.getServer().broadcast(Utils.getObjectAsBytes(winners));
         }
     }
 
