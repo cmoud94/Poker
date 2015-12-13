@@ -16,6 +16,7 @@ import poker.utils.Utils;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -40,9 +41,11 @@ public class GamePanel extends JPanel {
 
     private static List<JButton> actionButtons;
 
-    private static List<JPanel> playerPanels;
+    private static List<PlayerPanel> playerPanels;
 
     private static List<JLabel> communityCards;
+
+    private static JLabel pot;
 
     public GamePanel(ClientWindow parent, int x, int y, int width, int height, Client client) {
         GamePanel.parent = parent;
@@ -69,7 +72,7 @@ public class GamePanel extends JPanel {
         disableActions();
     }
 
-    public void showAvailableActions(ArrayList availableActions, int money) {
+    public void showAvailableActions(List availableActions, int money) {
         slider.setMaximum(money - 10);
         for (JButton button : GamePanel.actionButtons) {
             if (availableActions.contains(button.getText())) {
@@ -86,35 +89,53 @@ public class GamePanel extends JPanel {
         }
     }
 
-    public void showPlayerInfo(Player player, boolean showCards) {
-        System.out.println("[GamePanel] Showing player info");
-        if (!GamePanel.playerPanels.contains(player)) {
-            System.out.println("\t[GamePanel] Player not showed");
-            PlayerPanel playerPanel = new PlayerPanel(this, player, player.getID(), showCards, player.getName().equals(getClient().getName()));
-            GamePanel.playerPanels.add(playerPanel);
-            this.add(GamePanel.playerPanels.get(GamePanel.playerPanels.size() - 1));
+    public void drawPlayers(List players, boolean drawAllCards) {
+        for (int i = 0; i < players.size(); i++) {
+            PlayerPanel playerPanel = playerPanels.get(i);
+            Player player = (Player) players.get(i);
+            boolean isClient = player.getName().equals(getClient().getName());
+            playerPanel.setPlayer(player);
+            playerPanel.update(isClient, drawAllCards);
+            playerPanel.setVisible(true);
         }
     }
 
     public void drawCommunityCards(Table table) {
-        int communityCardsPosX = 253;
-        int communityCardsPosY = 207;
+        //int communityCardsPosX = 253;
+        //int communityCardsPosY = 207;
 
         for (int i = 0; i < table.getCommunityCards().size(); i++) {
             JLabel label = GamePanel.communityCards.get(i);
             Card card = table.getCommunityCards().get(i);
             label.setIcon(card.getCardImage());
-            label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
+            //label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
         }
+    }
+
+    public void updatePot(int money) {
+        pot.setText("Pot: " + money);
     }
 
     private void initComponents() {
         // Players
+        //Deck deck = new Deck();
         for (int i = 0; i < 8; i++) {
-            PlayerPanel playerPanel = new PlayerPanel(this, null, (i + 1), false, false);
-            GamePanel.playerPanels.add(playerPanel);
+            //Player player = new Player((i + 1), "Player_" + (i + 1), 500000);
+            //player.getCards().add(deck.dealCard());
+            //player.getCards().add(deck.dealCard());
+            PlayerPanel playerPanel = new PlayerPanel(this, (i + 1)); //new PlayerPanel(this, player, player.getID(), true, false);
+            playerPanels.add(playerPanel);
             this.add(playerPanel);
         }
+
+        // Pot
+        pot = new JLabel("Pot: 0");
+        pot.setFont(new Font("Sans", Font.BOLD, 12));
+        pot.setOpaque(true);
+        pot.setBackground(Color.LIGHT_GRAY);
+        pot.setSize(pot.getPreferredSize());
+        pot.setLocation(375, 290);
+        this.add(pot);
 
         // Community cards
         this.initCommunityCards();
@@ -146,7 +167,7 @@ public class GamePanel extends JPanel {
             button.setActionCommand(button.getText());
             button.setBounds(i * buttonWidth + actionsPosX + (i * 10), actionsPosY, buttonWidth, buttonHeight);
             button.setEnabled(false);
-            GamePanel.actionButtons.add(button);
+            actionButtons.add(button);
             this.add(button);
             button.addActionListener(new buttonPlayerActionsListener());
         }
@@ -170,7 +191,7 @@ public class GamePanel extends JPanel {
         for (int i = 0; i < 5; i++) {
             JLabel label = new JLabel(); //Utils.getScaledImageAsImageIcon(cardBackImage, cardWidth, cardHeight)
             label.setBounds(i * cardWidth + communityCardsPosX + (i * 10), communityCardsPosY, cardWidth, cardHeight);
-            GamePanel.communityCards.add(label);
+            communityCards.add(label);
             this.add(label);
         }
     }

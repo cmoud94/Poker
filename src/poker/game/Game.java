@@ -187,10 +187,10 @@ public class Game implements Runnable {
             }
         }
 
-        for (Player player : this.getPlayers()) {
+        /*for (Player player : this.getPlayers()) {
             System.out.println("[Game] Sending Player object to " + player.getName());
-            this.getServer().echo(player.getName(), Utils.getObjectAsBytes(player));
-        }
+        }*/
+        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
     }
 
     private boolean allCaled() {
@@ -391,6 +391,9 @@ public class Game implements Runnable {
             player.setMoney(player.getMoney() + player.getInPot());
             System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ". Has all-in so selecting other winners.");
 
+            this.getServer().setLastMessage("winner-all-in");
+            this.getServer().broadcast(Utils.getObjectAsBytes(winners));
+
             this.getTable().setPot(this.getTable().getPot() - player.getInPot());
             this.getPlayers().get(this.getPlayers().indexOf(winners.get(0).getPlayer())).setPlaying(false);
             if (this.getTable().getPot() > 0) {
@@ -400,6 +403,9 @@ public class Game implements Runnable {
             Player player = winners.get(0).getPlayer();
             player.setMoney(player.getMoney() + this.getTable().getPot());
             System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ".");
+
+            this.getServer().setLastMessage("winner");
+            this.getServer().broadcast(Utils.getObjectAsBytes(winners));
         } else {
             int money = this.getTable().getPot() / winners.size();
             System.out.println("We have " + winners.size() + " winners.");
@@ -408,6 +414,9 @@ public class Game implements Runnable {
                 System.out.println("\t" + winner.getPlayer().getName() + " HS: " + winner.getHandStrength() + " CV: " + winner.getHandCardsValue() + ". Getting " + money + ".");
                 this.getTable().setPot(this.getTable().getPot() - money);
             }
+
+            this.getServer().setLastMessage("winners");
+            this.getServer().broadcast(Utils.getObjectAsBytes(winners));
         }
     }
 

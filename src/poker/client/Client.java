@@ -239,8 +239,7 @@ public class Client implements Runnable {
 
             //this.processData(key, data);
 
-            Thread dataProcessor = new Thread(new DataProcessor(this, key, data));
-            dataProcessor.start();
+            new Thread(new DataProcessor(this, key, data)).run();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -254,7 +253,7 @@ public class Client implements Runnable {
             byte[] data = this.getPendingData().get(socketChannel);
             this.getPendingData().remove(socketChannel);
 
-            System.out.println("\tData writed: " + Utils.getBytesAsObject(data));
+            System.out.println("\tData written: " + Utils.getBytesAsObject(data));
 
             socketChannel.write(ByteBuffer.wrap(data));
 

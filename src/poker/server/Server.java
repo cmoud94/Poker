@@ -241,7 +241,9 @@ public class Server implements Runnable {
             byte[] data = new byte[this.getBuffSize()];
             readBuffer.get(data, 0, read);
 
-            this.processData(key, data);
+            //this.processData(key, data);
+
+            new Thread(new DataProcessor(this, key, data)).run();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -258,7 +260,7 @@ public class Server implements Runnable {
             while (!data.isEmpty()) {
                 byte[] bytes = data.remove(0);
 
-                System.out.println("\tData writen: " + Utils.getBytesAsObject(bytes));
+                System.out.println("\tData written: " + Utils.getBytesAsObject(bytes));
 
                 socketChannel.write(ByteBuffer.wrap(bytes));
 
@@ -311,7 +313,7 @@ public class Server implements Runnable {
         }
     }
 
-    private void processData(SelectionKey key, byte[] data) {
+    /*private void processData(SelectionKey key, byte[] data) {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {
@@ -355,7 +357,7 @@ public class Server implements Runnable {
                 this.echo(key, data);
             }
         }
-    }
+    }*/
 
     @Override
     public void run() {
@@ -388,10 +390,18 @@ public class Server implements Runnable {
                         name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         Table table = new Table(10);
                         Deck deck = new Deck();
-                        for (int i = 0; i < 3; i++) {
+                        for (int i = 0; i < 5; i++) {
                             table.getCommunityCards().add(deck.dealCard());
                         }
                         this.echo(name, Utils.getObjectAsBytes(table));
+                        break;
+                    case "player":
+                        name = JOptionPane.showInputDialog("[Server] Type player's name.");
+                        Player player = new Player(1, "Tlusty kokot", 10000);
+                        deck = new Deck();
+                        player.getCards().add(deck.dealCard());
+                        player.getCards().add(deck.dealCard());
+                        this.echo(name, Utils.getObjectAsBytes(player));
                         break;
                     default:
                         break;

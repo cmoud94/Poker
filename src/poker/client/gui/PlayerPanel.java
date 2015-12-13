@@ -34,12 +34,45 @@ public class PlayerPanel extends JPanel {
 
     private final int chipSize = 40;
 
+    public PlayerPanel(GamePanel parent, int type) {
+        this.type = type;
+        this.parent = parent;
+        this.player = null;
+        this.items = new ArrayList<>();
+        this.chips = new ArrayList<>();
+
+        chips.add(new JLabel(""));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
+        chips.get(0).setName("NO_BLIND");
+        chips.get(1).setName("DEALER");
+        chips.get(2).setName("SMALL_BLIND");
+        chips.get(3).setName("BIG_BLIND");
+
+        this.setSize(200, 150);
+        this.setLayout(null);
+        this.setOpaque(true);
+        this.setBackground(new Color(0, 0, 0, 0));
+        this.initComponents(false, false);
+        this.setVisible(false);
+    }
+
     public PlayerPanel(GamePanel parent, Player player, int type, boolean showCards, boolean client) {
         this.type = type;
         this.parent = parent;
         this.player = player;
         this.items = new ArrayList<>();
         this.chips = new ArrayList<>();
+
+        chips.add(new JLabel(""));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
+        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
+        chips.get(0).setName("NO_BLIND");
+        chips.get(1).setName("DEALER");
+        chips.get(2).setName("SMALL_BLIND");
+        chips.get(3).setName("BIG_BLIND");
 
         this.setSize(200, 150);
         this.setLayout(null);
@@ -68,51 +101,73 @@ public class PlayerPanel extends JPanel {
         return items;
     }
 
-    private void setChipPosition(String name, int posX, int posY) {
-        for (JLabel button : chips) {
-            if (button.getName().equals(name)) {
-                button.setLocation(this.getInsets().left + posX - (button.getWidth() / 2), this.getInsets().top + posY - (button.getHeight() / 2));
-                button.setVisible(true);
+    public void update(boolean isClient, boolean showCards) {
+        for (JLabel label : items) {
+            switch (label.getName()) {
+                case "chip":
+                    for (JLabel chip : chips) {
+                        if (chip.getName().equals(String.valueOf(player.getBlind()))) {
+                            label.setIcon(chip.getIcon());
+                        }
+                    }
+                    break;
+                case "name":
+                    label.setText(player.getName() + " (" + player.getMoney() + ")");
+                    label.setSize(label.getPreferredSize());
+                    label.setText(player.getName() + " (" + player.getMoney() + ")");
+                    if (isClient) {
+                        label.setBackground(new Color(0, 255, 255, 200));
+                    } else {
+                        label.setBackground(Color.LIGHT_GRAY);
+                    }
+                    break;
+                case "card1":
+                    if (showCards || isClient) {
+                        label.setIcon(player.getCards().get(0).getCardImage());
+                    } else {
+                        label.setIcon(player.getCards().get(0).getCardBackImage());
+                    }
+                    break;
+                case "card2":
+                    if (showCards || isClient) {
+                        label.setIcon(player.getCards().get(1).getCardImage());
+                    } else {
+                        label.setIcon(player.getCards().get(1).getCardBackImage());
+                    }
+                    break;
             }
         }
     }
 
-    private void initComponents(boolean showCards, boolean client) {
-        // Blind chips
-        chips.add(new JLabel(""));
-        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/dealer_button.png"), chipSize, chipSize)));
-        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/small_blind.png"), chipSize, chipSize)));
-        chips.add(new JLabel(Utils.getScaledImageAsImageIcon(Utils.loadImage(this, "/poker/client/gui/img/big_blind.png"), chipSize, chipSize)));
-        chips.get(0).setName("NO_BLIND");
-        chips.get(1).setName("DEALER");
-        chips.get(2).setName("SMALL_BLIND");
-        chips.get(3).setName("BIG_BLIND");
-
+    private void setChipPosition(String name, int posX, int posY) {
         for (JLabel button : chips) {
-            button.setSize(chipSize, chipSize);
-            button.setVisible(false);
-            this.add(button);
+            if (button.getName().equals(name)) {
+                button.setSize(chipSize, chipSize);
+                button.setLocation(this.getInsets().left + posX - (button.getWidth() / 2), this.getInsets().top + posY - (button.getHeight() / 2));
+                button.setVisible(true);
+            } else {
+                button.setVisible(false);
+            }
         }
+    }
 
-        JLabel card1;
-        JLabel card2;
+    private void initComponents(boolean showCards, boolean isClient) {
+        JLabel card1 = new JLabel("");
+        JLabel card2 = new JLabel("");
+        JLabel name = new JLabel("");
+        JLabel chip = new JLabel("");
 
-        if (showCards) {
-            card1 = new JLabel(player.getCards().get(0).getCardImage());
-            card2 = new JLabel(player.getCards().get(1).getCardImage());
-        } else {
-            card1 = new JLabel(player.getCards().get(0).getCardBackImage());
-            card2 = new JLabel(player.getCards().get(1).getCardBackImage());
-        }
+        card1.setName("card1");
+        card2.setName("card2");
+        name.setName("name");
+        chip.setName("chip");
 
-        JLabel name = new JLabel(this.getPlayer().getName() + " (" + this.getPlayer().getMoney() + ")");
+        String blind = "";
+
+        name.setText("Player name here");
         name.setFont(new Font("Sans", Font.BOLD, 12));
         name.setOpaque(true);
-        if (client) {
-            name.setBackground(new Color(0, 255, 255, 200));
-        } else {
-            name.setBackground(Color.LIGHT_GRAY);
-        }
+        name.setBackground(Color.LIGHT_GRAY);
 
         switch (this.getType()) {
             case 1:
@@ -120,56 +175,56 @@ public class PlayerPanel extends JPanel {
                 card1.setBounds(0, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, 0, cardWidth, cardHeight);
                 name.setBounds(0, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, 20);
+                this.setChipPosition(blind, 2 * cardWidth + 30, 20);
                 break;
             case 2:
                 this.setLocation(parent.getInsets().left + 5, parent.getInsets().top + 200);
                 card1.setBounds(0, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, 0, cardWidth, cardHeight);
                 name.setBounds(0, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, 40);
+                this.setChipPosition(blind, 2 * cardWidth + 30, 40);
                 break;
             case 3:
                 this.setLocation(parent.getInsets().left + 72, parent.getInsets().top + 50);
                 name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(String.valueOf(player.getBlind()), 2 * cardWidth + 30, 100);
+                this.setChipPosition(blind, 2 * cardWidth + 30, 100);
                 break;
             case 4:
                 this.setLocation(parent.getInsets().left + 250, parent.getInsets().top + 20);
                 name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(String.valueOf(player.getBlind()), cardWidth + (chipSize / 2) - 5, name.getHeight() + cardHeight + (chipSize / 2) + 5);
+                this.setChipPosition(blind, cardWidth + (chipSize / 2) - 5, name.getHeight() + cardHeight + (chipSize / 2) + 5);
                 break;
             case 5:
                 this.setLocation(parent.getInsets().left + 430, parent.getInsets().top + 20);
                 name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(String.valueOf(player.getBlind()), cardWidth + (chipSize / 2) - 10, name.getHeight() + cardHeight + (chipSize / 2) + 5);
+                this.setChipPosition(blind, cardWidth + (chipSize / 2) - 10, name.getHeight() + cardHeight + (chipSize / 2) + 5);
                 break;
             case 6:
                 this.setLocation(parent.getInsets().left + 580, parent.getInsets().top + 40);
                 name.setBounds(chipSize + 5, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(chipSize + 5, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(chipSize + cardWidth + 10, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(String.valueOf(player.getBlind()), 30, name.getHeight() + cardHeight + 20);
+                this.setChipPosition(blind, 30, name.getHeight() + cardHeight + 20);
                 break;
             case 7:
                 this.setLocation(parent.getInsets().left + 620, parent.getInsets().top + 200);
                 card1.setBounds(chipSize + 5, 0, cardWidth, cardHeight);
                 card2.setBounds(chipSize + 10 + cardWidth, 0, cardWidth, cardHeight);
                 name.setBounds(chipSize + 5, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(String.valueOf(player.getBlind()), 20, 40);
+                this.setChipPosition(blind, 20, 40);
                 break;
             case 8:
                 this.setLocation(parent.getInsets().left + 550, parent.getInsets().top + 340);
                 card1.setBounds(chipSize + 5, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 10 + chipSize, 0, cardWidth, cardHeight);
                 name.setBounds(chipSize + 5, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(String.valueOf(player.getBlind()), 20, 20);
+                this.setChipPosition(blind, 20, 20);
                 break;
         }
 
@@ -180,9 +235,11 @@ public class PlayerPanel extends JPanel {
         this.getItems().add(card1);
         this.getItems().add(card2);
         this.getItems().add(name);
+        this.getItems().add(chip);
 
         this.add(card1);
         this.add(card2);
         this.add(name);
+        this.add(chip);
     }
 }
