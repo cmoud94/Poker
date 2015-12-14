@@ -18,6 +18,8 @@ import java.util.List;
 
 public class Game implements Runnable {
 
+    private static final long serialVersionUID = 1L;
+
     private final int numOfPlayers;
 
     private final List<Player> players;
@@ -141,7 +143,7 @@ public class Game implements Runnable {
         this.setRunning(true);
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes("[Game] Are you ready?"));
+            this.getServer().broadcast(Utils.serialize("[Game] Are you ready?"));
         } else {
             for (Player player : this.getPlayers()) {
                 player.setReady(true);
@@ -187,7 +189,7 @@ public class Game implements Runnable {
             }
         }
 
-        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+        this.getServer().broadcast(Utils.serialize(this.getPlayers()));
     }
 
     private boolean allCaled() {
@@ -236,15 +238,15 @@ public class Game implements Runnable {
 
                         if (smallBlind && bigBlind) {
                             firstBetRound = false;
-                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
-                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+                            this.getServer().broadcast(Utils.serialize(this.getPlayers()));
+                            this.getServer().broadcast(Utils.serialize(this.getTable()));
                             break;
                         }
                     } else {
                         do {
                             if (this.getServer() != null) {
 
-                                this.getServer().echo(this.getPlayers().get(i).getName(), Utils.getObjectAsBytes(availableActions));
+                                this.getServer().echo(this.getPlayers().get(i).getName(), Utils.serialize(availableActions));
 
                                 while (this.getServer().getLastMessage().equals("")) {
                                     try {
@@ -275,8 +277,8 @@ public class Game implements Runnable {
                             }
                         } while (!this.handleAction(action, this.getPlayers().get(i), money));
 
-                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
-                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+                        this.getServer().broadcast(Utils.serialize(this.getPlayers()));
+                        this.getServer().broadcast(Utils.serialize(this.getTable()));
                     }
                 } else {
                     System.out.println(this.getPlayers().get(i).getName() + " not playing this round.");
@@ -310,9 +312,9 @@ public class Game implements Runnable {
         this.setBlinds();
         this.dealCards();
 
-        System.out.println("************************************************************");
+        /*System.out.println("************************************************************");
         System.out.println("*                         NEW GAME                         *");
-        System.out.println("************************************************************");
+        System.out.println("************************************************************");*/
 
         for (Player player : this.getPlayers()) {
             if (player.getMoney() == 0) {
@@ -326,7 +328,7 @@ public class Game implements Runnable {
                     player.getCards().get(0).toString() + " && " +
                     player.getCards().get(1).toString() + " | Money: " + player.getMoney());*/
 
-            this.getServer().echo(player.getName(), Utils.getObjectAsBytes("new-round"));
+            this.getServer().echo(player.getName(), Utils.serialize("new-round"));
         }
         //System.out.println();
     }
@@ -342,7 +344,7 @@ public class Game implements Runnable {
         }
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
+            this.getServer().broadcast(Utils.serialize(this.getTable()));
         }
 
         /*this.getTable().printCommunityCards();
@@ -357,7 +359,7 @@ public class Game implements Runnable {
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
+            this.getServer().broadcast(Utils.serialize(this.getTable()));
         }
 
         /*this.getTable().printCommunityCards();
@@ -372,7 +374,7 @@ public class Game implements Runnable {
         this.getTable().getCommunityCards().add(this.getDeck().dealCard());
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
+            this.getServer().broadcast(Utils.serialize(this.getTable()));
         }
 
         /*this.getTable().printCommunityCards();
@@ -396,7 +398,7 @@ public class Game implements Runnable {
             player.setMoney(player.getMoney() + player.getInPot());
             System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ". Has all-in so selecting other winners.");
 
-            //this.getServer().broadcast(Utils.getObjectAsBytes(winners));
+            //this.getServer().broadcast(Utils.serialize(winners));
 
             this.getTable().setPot(this.getTable().getPot() - player.getInPot());
             this.getPlayers().get(this.getPlayers().indexOf(winners.get(0).getPlayer())).setPlaying(false);
@@ -408,7 +410,7 @@ public class Game implements Runnable {
             player.setMoney(player.getMoney() + this.getTable().getPot());
             System.out.println("Winner is: " + winners.get(0).getPlayer().getName() + " HS: " + winners.get(0).getHandStrength() + " CV: " + winners.get(0).getHandCardsValue() + ". Getting " + this.getTable().getPot() + ".");
 
-            //this.getServer().broadcast(Utils.getObjectAsBytes(winners));
+            //this.getServer().broadcast(Utils.serialize(winners));
         } else {
             int money = this.getTable().getPot() / winners.size();
             System.out.println("We have " + winners.size() + " winners.");
@@ -418,7 +420,7 @@ public class Game implements Runnable {
                 this.getTable().setPot(this.getTable().getPot() - money);
             }
 
-            //this.getServer().broadcast(Utils.getObjectAsBytes(winners));
+            //this.getServer().broadcast(Utils.serialize(winners));
         }
     }
 
@@ -489,7 +491,7 @@ public class Game implements Runnable {
         this.setActivePlayers(this.getActivePlayers() - 1);
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has folded"));
+            this.getServer().broadcast(Utils.serialize(player.getName() + " has folded"));
         }
 
         return true;
@@ -500,7 +502,7 @@ public class Game implements Runnable {
             System.out.println("\t" + player.getName() + " has checked.");
 
             if (this.getServer() != null) {
-                this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has checked"));
+                this.getServer().broadcast(Utils.serialize(player.getName() + " has checked"));
             }
 
             return true;
@@ -525,7 +527,7 @@ public class Game implements Runnable {
             System.out.println("\t" + player.getName() + " | You've called '" + call + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
             if (this.getServer() != null) {
-                this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has called"));
+                this.getServer().broadcast(Utils.serialize(player.getName() + " has called"));
             }
 
             this.afterCall();
@@ -567,7 +569,7 @@ public class Game implements Runnable {
         }
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has bet"));
+            this.getServer().broadcast(Utils.serialize(player.getName() + " has bet"));
         }
 
         this.afterBet(player);
@@ -586,7 +588,7 @@ public class Game implements Runnable {
         System.out.println("\tYou've bet all your money. Money: '" + player.getMoney() + "'. In pot: '" + this.getTable().getPot() + "'.");
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " is all-in"));
+            this.getServer().broadcast(Utils.serialize(player.getName() + " is all-in"));
         }
 
         this.setLastBet(bet);
@@ -603,7 +605,7 @@ public class Game implements Runnable {
         System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | You've bet '" + blind + "'. Money: '" + player.getMoney() + "'. In Pot '" + this.getTable().getPot() + "'.");
 
         if (this.getServer() != null) {
-            this.getServer().broadcast(Utils.getObjectAsBytes(player.getName() + " has bet " + player.getBlind()));
+            this.getServer().broadcast(Utils.serialize(player.getName() + " has bet " + player.getBlind()));
         }
 
         this.setLastBet(blind);

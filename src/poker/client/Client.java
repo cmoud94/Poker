@@ -205,7 +205,7 @@ public class Client implements Runnable {
             }
 
             socketChannel.configureBlocking(false);
-            this.getPendingData().put(socketChannel, Utils.getObjectAsBytes(this.getName()));
+            this.getPendingData().put(socketChannel, Utils.serialize(this.getName()));
             socketChannel.register(this.getSelector(), SelectionKey.OP_WRITE, "Server");
             this.getWindow().getConnectionPanel().clientConnected();
         } catch (IOException e) {
@@ -241,13 +241,16 @@ public class Client implements Runnable {
             }
 
             readBuffer.flip();
-            byte[] data = new byte[this.getBuffSize()];
-            readBuffer.get(data, 0, read);
+            byte[] data = new byte[readBuffer.limit()];
+            readBuffer.get(data, 0, readBuffer.limit());
 
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
             thread.join();
-            this.sendData(Utils.getObjectAsBytes("ack"));
+
+            Thread.sleep(250);
+
+            this.sendData(Utils.serialize("ack"));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -261,15 +264,9 @@ public class Client implements Runnable {
             byte[] data = this.getPendingData().get(socketChannel);
             this.getPendingData().remove(socketChannel);
 
-            System.out.println("\tData written: " + Utils.getBytesAsObject(data));
+            System.out.println("\tData written: " + Utils.deserialize(data, 0, data.length));
 
             socketChannel.write(ByteBuffer.wrap(data));
-
-            /*try {
-                Thread.sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }*/
 
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
@@ -277,7 +274,7 @@ public class Client implements Runnable {
         }
     }
 
-    public void sendData(byte[] data) {
+    public synchronized void sendData(byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
         for (SelectionKey key : this.getSelector().keys()) {
@@ -309,7 +306,7 @@ public class Client implements Runnable {
                         break;
                     case "send":
                         action = JOptionPane.showInputDialog("[Client] What you want to send?");
-                        this.sendData(Utils.getObjectAsBytes(action));
+                        this.sendData(Utils.serialize(action));
                         break;
                     default:
                         break;

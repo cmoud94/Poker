@@ -158,7 +158,7 @@ public class ConnectionPanel extends JPanel {
         public void actionPerformed(ActionEvent actionEvent) {
             labelPlayerReady.setVisible(false);
             buttonReady.setVisible(false);
-            getClient().sendData(Utils.getObjectAsBytes("yes"));
+            getClient().sendData(Utils.serialize("yes"));
         }
     }
 

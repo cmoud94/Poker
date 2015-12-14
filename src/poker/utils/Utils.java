@@ -14,24 +14,12 @@ import java.io.*;
 
 public class Utils {
 
-    public static byte[] getObjectAsBytes(Object object) {
-        ByteArrayOutputStream baos = null;
-        ObjectOutputStream oos = null;
-
-        try {
-            baos = new ByteArrayOutputStream();
-            oos = new ObjectOutputStream(baos);
-
-            oos.reset();
-            oos.writeObject(object);
-            oos.flush();
-
-            byte[] bytes = baos.toByteArray();
-
-            oos.close();
-            baos.close();
-
-            return (bytes != null) ? bytes : null;
+    public static byte[] serialize(Object object) {
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+             ObjectOutput oo = new ObjectOutputStream(baos)) {
+            oo.writeObject(object);
+            oo.flush();
+            return baos.toByteArray();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -39,20 +27,21 @@ public class Utils {
         return null;
     }
 
-    public static Object getBytesAsObject(byte[] bytes) {
-        ByteArrayInputStream bais = null;
-        ObjectInputStream ois = null;
+    public static Object deserialize(byte[] bytes) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+             ObjectInput oi = new ObjectInputStream(bais)) {
+            return oi.readObject();
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
 
-        try {
-            bais = new ByteArrayInputStream(bytes);
-            ois = new ObjectInputStream(bais);
+        return null;
+    }
 
-            Object object = ois.readObject();
-
-            ois.close();
-            bais.close();
-
-            return (object != null) ? object : null;
+    public static Object deserialize(byte[] bytes, int offset, int length) {
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes, offset, length);
+             ObjectInput oi = new ObjectInputStream(bais)) {
+            return oi.readObject();
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }

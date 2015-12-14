@@ -40,14 +40,15 @@ public class DataProcessor implements Runnable {
         return data;
     }
 
-    public void processData(SelectionKey key, byte[] data) {
-        Object object = Utils.getBytesAsObject(data);
+    public synchronized void processData(SelectionKey key, byte[] data) {
+        Object object = Utils.deserialize(data);
 
         if (object instanceof String) {
             if (object.equals("[Game] Are you ready?")) {
                 System.out.println("[Client] " + object);
                 this.getParent().getWindow().getConnectionPanel().serverReady();
             } else if (object.equals("new-round")) {
+                System.out.println("[Client] " + object);
                 this.getParent().getWindow().getGamePanel().newRound();
             } else {
                 System.out.println("[Client] " + key.attachment() + ": " + object);
@@ -75,8 +76,6 @@ public class DataProcessor implements Runnable {
             System.out.println("[Client] Received player info");
             this.getParent().setPlayer((Player) object);
         }
-
-        //this.getParent().sendData(Utils.getObjectAsBytes("ack"));
     }
 
     @Override

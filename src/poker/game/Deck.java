@@ -18,6 +18,8 @@ import java.util.Random;
 
 public class Deck implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final List<Card> deck;
 
     // Card Dimension WxH: 125x181 ratio: W * 1.448 | H * 0.690607735

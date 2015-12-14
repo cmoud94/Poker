@@ -21,8 +21,8 @@ class Run {
         Deck deck = new Deck();
         System.out.println(deck.getDeck());
 
-        byte[] bytes = Utils.getObjectAsBytes(deck);
-        Deck deck1 = (Deck) Utils.getBytesAsObject(bytes);
+        byte[] bytes = Utils.serialize(deck);
+        Deck deck1 = (Deck) Utils.deserialize(bytes, 0, bytes.length);
         System.out.println(deck1.getDeck());
     }
 
@@ -30,8 +30,8 @@ class Run {
         Deck deck = new Deck();
         System.out.println(deck.getDeck());
 
-        byte[] bytes = Utils.getObjectAsBytes(deck);
-        Object object = Utils.getBytesAsObject(bytes);
+        byte[] bytes = Utils.serialize(deck);
+        Object object = Utils.deserialize(bytes, 0, bytes.length);
         if (object instanceof Card) {
             System.out.println("Deck is instance of Card");
         } else {

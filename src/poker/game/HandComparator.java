@@ -13,6 +13,8 @@ import java.util.List;
 
 public class HandComparator implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     private final List<Hand> hands;
 
     public HandComparator(List<Hand> hands) {

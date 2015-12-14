@@ -207,8 +207,8 @@ public class Server implements Runnable {
             }
 
             readBuffer.flip();
-            byte[] data = new byte[this.getBuffSize()];
-            readBuffer.get(data, 0, read);
+            byte[] data = new byte[readBuffer.limit()];
+            readBuffer.get(data, 0, readBuffer.limit());
 
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
@@ -226,24 +226,17 @@ public class Server implements Runnable {
             byte[] data = this.getPendingData().get(socketChannel).remove(0);
 
             if (data != null) {
-                System.out.println("\tData written: " + Utils.getBytesAsObject(data));
+                System.out.println("\tData written: " + Utils.deserialize(data));
 
                 socketChannel.write(ByteBuffer.wrap(data));
-
-                /*try {
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
-
-                key.interestOps(SelectionKey.OP_READ);
             }
+            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void echo(SelectionKey key, byte[] data) {
+    public synchronized void echo(SelectionKey key, byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -252,7 +245,7 @@ public class Server implements Runnable {
             pendingData = new ArrayList<>();
         }
         pendingData.add(data);
-        //this.getPendingData().remove(socketChannel);
+        this.getPendingData().remove(socketChannel);
         this.getPendingData().put(socketChannel, pendingData);
         key.interestOps(SelectionKey.OP_WRITE);
     }
@@ -268,7 +261,7 @@ public class Server implements Runnable {
     }
 
     public void broadcast(byte[] data) {
-        System.out.println("[Server] Broadcasting data | " + Utils.getBytesAsObject(data));
+        System.out.println("[Server] Broadcasting data | " + Utils.deserialize(data, 0, data.length));
 
         for (SelectionKey key : this.getSelector().keys()) {
             if (key.channel() instanceof SocketChannel && key.isValid()) {
@@ -298,11 +291,11 @@ public class Server implements Runnable {
                     case "send":
                         String name = JOptionPane.showInputDialog("[Server] Type player's name.");
                         action = JOptionPane.showInputDialog("[Server] Type your message.");
-                        this.echo(name, Utils.getObjectAsBytes(action));
+                        this.echo(name, Utils.serialize(action));
                         break;
                     case "broadcast":
                         action = JOptionPane.showInputDialog("[Server] What you want to broadcast?");
-                        this.broadcast(Utils.getObjectAsBytes(action));
+                        this.broadcast(Utils.serialize(action));
                         break;
                     case "table":
                         name = JOptionPane.showInputDialog("[Server] Type player's name.");
@@ -311,7 +304,7 @@ public class Server implements Runnable {
                         for (int i = 0; i < 5; i++) {
                             table.getCommunityCards().add(deck.dealCard());
                         }
-                        this.echo(name, Utils.getObjectAsBytes(table));
+                        this.echo(name, Utils.serialize(table));
                         break;
                     case "player":
                         name = JOptionPane.showInputDialog("[Server] Type player's name.");
@@ -324,7 +317,7 @@ public class Server implements Runnable {
                         for (int i = 0; i < 8; i++) {
                             players.add(player);
                         }
-                        this.echo(name, Utils.getObjectAsBytes(players));
+                        this.echo(name, Utils.serialize(players));
                         break;
                     default:
                         break;

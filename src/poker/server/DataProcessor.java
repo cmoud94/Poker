@@ -39,8 +39,8 @@ public class DataProcessor implements Runnable {
         return data;
     }
 
-    public void processData(SelectionKey key, byte[] data) {
-        Object object = Utils.getBytesAsObject(data);
+    public synchronized void processData(SelectionKey key, byte[] data) {
+        Object object = Utils.deserialize(data);
 
         if (object instanceof String) {
             if (key.attachment().equals("accept")) {
@@ -52,7 +52,7 @@ public class DataProcessor implements Runnable {
                 Player player = new Player(id, (String) object, this.getParent().getStartingMoney());
                 this.getParent().getGame().getPlayers().add(player);
 
-                this.getParent().echo(player.getName(), Utils.getObjectAsBytes(player));
+                this.getParent().echo(player.getName(), Utils.serialize(player));
 
                 if (this.getParent().getGame().getPlayers().size() == this.getParent().getGame().getNumOfPlayers()) {
                     this.getParent().getGame().init();
@@ -60,7 +60,6 @@ public class DataProcessor implements Runnable {
             } else if (object.equals("yes")) {
                 Player player = this.getParent().getGame().getPlayerByPlayerName((String) key.attachment());
                 System.out.println("[Server] " + player.getName() + " is now ready to play");
-
 
                 this.getParent().setLastMessage("");
                 player.setReady(true);
