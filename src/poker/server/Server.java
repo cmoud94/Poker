@@ -136,9 +136,11 @@ public class Server implements Runnable {
 
                     if (key.isAcceptable()) {
                         this.accept(key);
-                    } else if (key.isReadable()) {
+                    }
+                    if (key.isReadable()) {
                         this.read(key);
-                    } else if (key.isWritable()) {
+                    }
+                    if (key.isWritable()) {
                         this.write(key);
                     }
                 }
@@ -224,15 +226,15 @@ public class Server implements Runnable {
             byte[] data = this.getPendingData().get(socketChannel).remove(0);
 
             if (data != null) {
+                System.out.println("\tData written: " + Utils.getBytesAsObject(data));
+
+                socketChannel.write(ByteBuffer.wrap(data));
+
                 /*try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }*/
-
-                System.out.println("\tData written: " + Utils.getBytesAsObject(data));
-
-                socketChannel.write(ByteBuffer.wrap(data));
 
                 key.interestOps(SelectionKey.OP_READ);
             }

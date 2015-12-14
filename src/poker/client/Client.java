@@ -146,10 +146,6 @@ public class Client implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                if (!this.getSelector().isOpen() || !this.getSocketChannel().isOpen()) {
-                    break;
-                }
-
                 this.getSelector().selectNow();
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
@@ -164,9 +160,11 @@ public class Client implements Runnable {
 
                     if (key.isConnectable()) {
                         this.connect(key);
-                    } else if (key.isReadable()) {
+                    }
+                    if (key.isReadable()) {
                         this.read(key);
-                    } else if (key.isWritable()) {
+                    }
+                    if (key.isWritable()) {
                         this.write(key);
                     }
                 }
@@ -263,15 +261,15 @@ public class Client implements Runnable {
             byte[] data = this.getPendingData().get(socketChannel);
             this.getPendingData().remove(socketChannel);
 
+            System.out.println("\tData written: " + Utils.getBytesAsObject(data));
+
+            socketChannel.write(ByteBuffer.wrap(data));
+
             /*try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }*/
-
-            System.out.println("\tData written: " + Utils.getBytesAsObject(data));
-
-            socketChannel.write(ByteBuffer.wrap(data));
 
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
