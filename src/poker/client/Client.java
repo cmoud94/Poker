@@ -239,7 +239,8 @@ public class Client implements Runnable {
 
             //this.processData(key, data);
 
-            new Thread(new DataProcessor(this, key, data)).run();
+            Thread thread = new Thread(new DataProcessor(this, key, data));
+            thread.start();
         } catch (IOException e) {
             e.printStackTrace();
         }

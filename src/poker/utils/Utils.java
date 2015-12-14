@@ -11,7 +11,6 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URL;
 
 public class Utils {
 
@@ -72,8 +71,10 @@ public class Utils {
         ImageIcon imageIcon = null;
 
         try {
-            URL url = parent.getClass().getResource(pathToImage);
-            bufferedImage = ImageIO.read(new FileInputStream(url.getPath()));
+            /*URL url = parent.getClass().getResource(pathToImage);
+            bufferedImage = ImageIO.read(new FileInputStream(url.getPath()));*/
+            InputStream inputStream = parent.getClass().getResourceAsStream(pathToImage);
+            bufferedImage = ImageIO.read(inputStream);
         } catch (IOException e) {
             e.printStackTrace();
         }

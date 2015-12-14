@@ -144,7 +144,7 @@ public class Server implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select(1000);
+                this.getSelector().select(5000);
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -231,7 +231,8 @@ public class Server implements Runnable {
 
             //this.processData(key, data);
 
-            new Thread(new DataProcessor(this, key, data)).run();
+            Thread thread = new Thread(new DataProcessor(this, key, data));
+            thread.start();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -255,7 +256,7 @@ public class Server implements Runnable {
                 key.interestOps(SelectionKey.OP_READ);
 
                 try {
-                    Thread.sleep(50);
+                    Thread.sleep(250);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -300,52 +301,6 @@ public class Server implements Runnable {
             }
         }
     }
-
-    /*private void processData(SelectionKey key, byte[] data) {
-        Object object = Utils.getBytesAsObject(data);
-
-        if (object instanceof String) {
-            if (key.attachment().equals("accept")) {
-                System.out.println("[Server] Player " + object + " has connected");
-
-                key.attach(object);
-
-                int id = this.getGame().getPlayers().size() + 1;
-                Player player = new Player(id, (String) object, this.getStartingMoney());
-                this.getGame().getPlayers().add(player);
-
-                if (this.getGame().getPlayers().size() == this.getGame().getNumOfPlayers()) {
-                    this.getGame().init();
-                }
-            } else if (object.equals("yes")) {
-                Player player = this.getGame().getPlayerByPlayerName((String) key.attachment());
-                System.out.println("[Server] " + player.getName() + " is now ready to play");
-
-
-                this.setLastMessage("");
-                player.setReady(true);
-
-                boolean allReady = true;
-                for (Player p : this.getGame().getPlayers()) {
-                    if (!p.isReady()) {
-                        allReady = false;
-                    }
-                }
-
-                if (allReady) {
-                    System.out.println("[Server] Starting gameLoop");
-                    Thread gameLoopThread = new Thread(this.getGame(), "serverGameLoop");
-                    gameLoopThread.start();
-                }
-            } else if (this.getGameActions().contains(object)) {
-                System.out.println("[Server] Received action " + object + " from " + key.attachment());
-                this.setLastMessage((String) object);
-            } else {
-                System.out.println("[Server] " + key.attachment() + " said: " + object);
-                this.echo(key, data);
-            }
-        }
-    }*/
 
     @Override
     public void run() {
