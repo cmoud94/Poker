@@ -274,7 +274,7 @@ public class Client implements Runnable {
         }
     }
 
-    public synchronized void sendData(byte[] data) {
+    public void sendData(byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
         for (SelectionKey key : this.getSelector().keys()) {

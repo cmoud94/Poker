@@ -230,13 +230,14 @@ public class Server implements Runnable {
 
                 socketChannel.write(ByteBuffer.wrap(data));
             }
+
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public synchronized void echo(SelectionKey key, byte[] data) {
+    public void echo(SelectionKey key, byte[] data) {
         //System.out.println("[Server] Echoing data (" + key.attachment() + ")");
 
         SocketChannel socketChannel = (SocketChannel) key.channel();
