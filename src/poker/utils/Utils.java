@@ -31,7 +31,7 @@ public class Utils {
             oos.close();
             baos.close();
 
-            return bytes;
+            return (bytes != null) ? bytes : null;
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -52,7 +52,7 @@ public class Utils {
             ois.close();
             bais.close();
 
-            return object;
+            return (object != null) ? object : null;
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
