@@ -141,7 +141,7 @@ public class Client implements Runnable {
         }
     }
 
-    public void clientLoop() {
+    public synchronized void clientLoop() {
         //System.out.println("[Client] Entering main loop");
 
         try {
@@ -215,7 +215,7 @@ public class Client implements Runnable {
         }
     }
 
-    private void read(SelectionKey key) {
+    private synchronized void read(SelectionKey key) {
         System.out.println("[Client] Reading data from " + key.attachment());
 
         try {
@@ -249,14 +249,13 @@ public class Client implements Runnable {
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
             thread.join();
-
             this.sendData(Utils.getObjectAsBytes("ack"));
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void write(SelectionKey key) {
+    private synchronized void write(SelectionKey key) {
         System.out.println("[Client] Writing data");
 
         try {
@@ -265,7 +264,7 @@ public class Client implements Runnable {
             this.getPendingData().remove(socketChannel);
 
             /*try {
-                Thread.sleep(100);
+                Thread.sleep(10);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }*/

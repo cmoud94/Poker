@@ -37,13 +37,9 @@ public class Server implements Runnable {
 
     private final int buffSize;
 
-    private boolean serverRunning;
-
     private final Game game;
 
     private final int startingMoney;
-
-    private boolean gameRunning;
 
     private String lastMessage;
 
@@ -53,10 +49,8 @@ public class Server implements Runnable {
         this.selector = null;
         pendingData = new HashMap<>();
         this.buffSize = 131136;
-        this.serverRunning = false;
         this.game = new Game(numOfPlayers, bigBlind, this);
         this.startingMoney = startingMoney;
-        this.gameRunning = false;
         this.lastMessage = "";
     }
 
@@ -88,28 +82,12 @@ public class Server implements Runnable {
         return buffSize;
     }
 
-    public boolean isServerRunning() {
-        return serverRunning;
-    }
-
-    public void setServerRunning(boolean serverRunning) {
-        this.serverRunning = serverRunning;
-    }
-
     public Game getGame() {
         return game;
     }
 
     public int getStartingMoney() {
         return startingMoney;
-    }
-
-    public boolean isGameRunning() {
-        return gameRunning;
-    }
-
-    public void setGameRunning(boolean gameRunning) {
-        this.gameRunning = gameRunning;
     }
 
     public String getLastMessage() {
@@ -139,7 +117,7 @@ public class Server implements Runnable {
         }
     }
 
-    public void serverLoop() {
+    public synchronized void serverLoop() {
         //System.out.println("[Server] Waiting for clients");
 
         try {
@@ -200,7 +178,7 @@ public class Server implements Runnable {
         }
     }
 
-    private void read(SelectionKey key) {
+    private synchronized void read(SelectionKey key) {
         System.out.println("[Server] Reading data (" + key.attachment() + ")");
 
         try {
@@ -233,13 +211,12 @@ public class Server implements Runnable {
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
             thread.join();
-
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void write(final SelectionKey key) {
+    private synchronized void write(final SelectionKey key) {
         System.out.println("[Server] Writing data (" + key.attachment() + ")");
 
         try {
@@ -248,7 +225,7 @@ public class Server implements Runnable {
 
             if (data != null) {
                 /*try {
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }*/
@@ -262,30 +239,6 @@ public class Server implements Runnable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        /*try {
-            SocketChannel socketChannel = (SocketChannel) key.channel();
-            List<byte[]> data = this.getPendingData().get(socketChannel);
-            //this.getPendingData().remove(socketChannel);
-
-            while (!data.isEmpty()) {
-                byte[] bytes = data.remove(0);
-
-                System.out.println("\tData written: " + Utils.getBytesAsObject(bytes));
-
-                socketChannel.write(ByteBuffer.wrap(bytes));
-
-                key.interestOps(SelectionKey.OP_READ);
-
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     public void echo(SelectionKey key, byte[] data) {

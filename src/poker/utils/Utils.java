@@ -22,6 +22,7 @@ public class Utils {
             baos = new ByteArrayOutputStream();
             oos = new ObjectOutputStream(baos);
 
+            oos.reset();
             oos.writeObject(object);
             oos.flush();
 
@@ -35,7 +36,7 @@ public class Utils {
             e.printStackTrace();
         }
 
-        return new byte[0];
+        return null;
     }
 
     public static Object getBytesAsObject(byte[] bytes) {
@@ -59,12 +60,12 @@ public class Utils {
         return null;
     }
 
-    public static byte[] concatByteArrays(byte[] first, byte[] second) {
+    /*public static byte[] concatByteArrays(byte[] first, byte[] second) {
         byte[] result = new byte[first.length + second.length];
         System.arraycopy(first, 0, result, 0, first.length);
         System.arraycopy(second, 0, result, first.length, second.length);
         return result;
-    }
+    }*/
 
     public static BufferedImage loadImage(Object parent, String pathToImage) {
         BufferedImage bufferedImage = null;

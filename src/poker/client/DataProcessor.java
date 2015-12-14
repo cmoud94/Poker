@@ -40,7 +40,7 @@ public class DataProcessor implements Runnable {
         return data;
     }
 
-    public void processData(SelectionKey key, byte[] data) {
+    public synchronized void processData(SelectionKey key, byte[] data) {
         Object object = Utils.getBytesAsObject(data);
 
         if (object instanceof String) {

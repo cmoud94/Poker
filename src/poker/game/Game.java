@@ -236,8 +236,8 @@ public class Game implements Runnable {
 
                         if (smallBlind && bigBlind) {
                             firstBetRound = false;
-                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                             this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
+                            this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                             break;
                         }
                     } else {
@@ -275,8 +275,8 @@ public class Game implements Runnable {
                             }
                         } while (!this.handleAction(action, this.getPlayers().get(i), money));
 
-                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                         this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
+                        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
                     }
                 } else {
                     System.out.println(this.getPlayers().get(i).getName() + " not playing this round.");
@@ -322,13 +322,13 @@ public class Game implements Runnable {
             }
 
             player.newRound();
-            System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | Cards: " +
+            /*System.out.println("\t" + player.getName() + " | " + player.getBlind() + " | Cards: " +
                     player.getCards().get(0).toString() + " && " +
-                    player.getCards().get(1).toString() + " | Money: " + player.getMoney());
+                    player.getCards().get(1).toString() + " | Money: " + player.getMoney());*/
 
             this.getServer().echo(player.getName(), Utils.getObjectAsBytes("new-round"));
         }
-        System.out.println();
+        //System.out.println();
     }
 
     private void flop() {
@@ -345,8 +345,8 @@ public class Game implements Runnable {
             this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
         }
 
-        this.getTable().printCommunityCards();
-        System.out.println("FLOP");
+        /*this.getTable().printCommunityCards();
+        System.out.println("FLOP");*/
     }
 
     private void turn() {
@@ -360,8 +360,8 @@ public class Game implements Runnable {
             this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
         }
 
-        this.getTable().printCommunityCards();
-        System.out.println("TURN");
+        /*this.getTable().printCommunityCards();
+        System.out.println("TURN");*/
     }
 
     private void river() {
@@ -375,8 +375,8 @@ public class Game implements Runnable {
             this.getServer().broadcast(Utils.getObjectAsBytes(this.getTable()));
         }
 
-        this.getTable().printCommunityCards();
-        System.out.println("RIVER");
+        /*this.getTable().printCommunityCards();
+        System.out.println("RIVER");*/
     }
 
     private void checkWinner() {
