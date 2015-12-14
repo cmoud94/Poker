@@ -124,6 +124,7 @@ public class Client implements Runnable {
         System.out.println("[Client] Initializing client");
 
         if (this.getSocketChannel() != null || this.getSelector() != null) {
+            System.out.println("[Client] Aborting init");
             return;
         }
 
@@ -145,6 +146,10 @@ public class Client implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
+                if (!this.getSelector().isOpen() || !this.getSocketChannel().isOpen()) {
+                    break;
+                }
+
                 this.getSelector().selectNow();
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
@@ -166,6 +171,7 @@ public class Client implements Runnable {
                     }
                 }
             }
+            System.out.println("[Client] clientLoop ended");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -175,12 +181,15 @@ public class Client implements Runnable {
 
     public void closeConnection() {
         System.out.println("[Client] Closing connection");
-        if (this.getSelector() != null) {
+        if (this.getSelector() != null || this.getSocketChannel() != null) {
             try {
-                //this.getSelector().close();
+                this.getSelector().close();
                 this.getSocketChannel().socket().close();
                 this.getSocketChannel().close();
                 this.getWindow().getConnectionPanel().clientDisconnected();
+
+                this.setSelector(null);
+                this.setSocketChannel(null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -239,7 +248,10 @@ public class Client implements Runnable {
 
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
-        } catch (IOException e) {
+            thread.join();
+
+            this.sendData(Utils.getObjectAsBytes("ack"));
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -252,15 +264,15 @@ public class Client implements Runnable {
             byte[] data = this.getPendingData().get(socketChannel);
             this.getPendingData().remove(socketChannel);
 
-            System.out.println("\tData written: " + Utils.getBytesAsObject(data));
-
-            socketChannel.write(ByteBuffer.wrap(data));
-
             /*try {
-                Thread.sleep(50);
+                Thread.sleep(100);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }*/
+
+            System.out.println("\tData written: " + Utils.getBytesAsObject(data));
+
+            socketChannel.write(ByteBuffer.wrap(data));
 
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {

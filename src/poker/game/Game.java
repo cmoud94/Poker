@@ -187,10 +187,7 @@ public class Game implements Runnable {
             }
         }
 
-        /*for (Player player : this.getPlayers()) {
-            System.out.println("[Game] Sending Player object to " + player.getName());
-        }*/
-        //this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
+        this.getServer().broadcast(Utils.getObjectAsBytes(this.getPlayers()));
     }
 
     private boolean allCaled() {

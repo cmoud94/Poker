@@ -126,7 +126,7 @@ public class ConnectionPanel extends JPanel {
         @Override
         public void actionPerformed(ActionEvent actionEvent) {
             if (!textFieldAddress.getText().equals("") && !textFieldName.getText().equals("") && buttonConnect.getText().equals("Connect")) {
-                System.out.println("[ConnectionPanel - buttonConnectAction] Connecting to server...");
+                //System.out.println("[ConnectionPanel - buttonConnectAction] Connecting to server...");
 
                 String address = textFieldAddress.getText().trim();
                 int port = Integer.parseInt(address.substring((address.indexOf(':') + 1), address.length()));

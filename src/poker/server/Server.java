@@ -33,7 +33,7 @@ public class Server implements Runnable {
 
     private Selector selector;
 
-    private Map<SocketChannel, List<byte[]>> pendingData;
+    private static Map<SocketChannel, List<byte[]>> pendingData;
 
     private final int buffSize;
 
@@ -51,7 +51,7 @@ public class Server implements Runnable {
         this.port = port;
         this.serverSocketChannel = null;
         this.selector = null;
-        this.pendingData = new HashMap<>();
+        pendingData = new HashMap<>();
         this.buffSize = 131136;
         this.serverRunning = false;
         this.game = new Game(numOfPlayers, bigBlind, this);
@@ -165,6 +165,7 @@ public class Server implements Runnable {
                     }
                 }
             }
+            System.out.println("[Server] serverLoop ended");
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -231,18 +232,41 @@ public class Server implements Runnable {
 
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
-        } catch (IOException e) {
+            thread.join();
+
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void write(SelectionKey key) {
+    private void write(final SelectionKey key) {
         System.out.println("[Server] Writing data (" + key.attachment() + ")");
 
         try {
             SocketChannel socketChannel = (SocketChannel) key.channel();
+            byte[] data = this.getPendingData().get(socketChannel).remove(0);
+
+            if (data != null) {
+                /*try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
+
+                System.out.println("\tData written: " + Utils.getBytesAsObject(data));
+
+                socketChannel.write(ByteBuffer.wrap(data));
+
+                key.interestOps(SelectionKey.OP_READ);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        /*try {
+            SocketChannel socketChannel = (SocketChannel) key.channel();
             List<byte[]> data = this.getPendingData().get(socketChannel);
-            this.getPendingData().remove(socketChannel);
+            //this.getPendingData().remove(socketChannel);
 
             while (!data.isEmpty()) {
                 byte[] bytes = data.remove(0);
@@ -261,7 +285,7 @@ public class Server implements Runnable {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }
+        }*/
     }
 
     public void echo(SelectionKey key, byte[] data) {
@@ -273,7 +297,7 @@ public class Server implements Runnable {
             pendingData = new ArrayList<>();
         }
         pendingData.add(data);
-        this.getPendingData().remove(socketChannel);
+        //this.getPendingData().remove(socketChannel);
         this.getPendingData().put(socketChannel, pendingData);
         key.interestOps(SelectionKey.OP_WRITE);
     }
@@ -336,11 +360,16 @@ public class Server implements Runnable {
                         break;
                     case "player":
                         name = JOptionPane.showInputDialog("[Server] Type player's name.");
-                        Player player = new Player(1, "Tlusty kokot", 10000);
+                        Player player = new Player(1, "Test_player", 10000);
                         deck = new Deck();
                         player.getCards().add(deck.dealCard());
                         player.getCards().add(deck.dealCard());
-                        this.echo(name, Utils.getObjectAsBytes(player));
+                        player.setBlind(Player.Blind.BIG_BLIND);
+                        List<Player> players = new ArrayList<>();
+                        for (int i = 0; i < 8; i++) {
+                            players.add(player);
+                        }
+                        this.echo(name, Utils.getObjectAsBytes(players));
                         break;
                     default:
                         break;

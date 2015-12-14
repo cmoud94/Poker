@@ -11,6 +11,7 @@ import poker.game.Player;
 import poker.utils.Utils;
 
 import java.nio.channels.SelectionKey;
+import java.nio.channels.SocketChannel;
 
 public class DataProcessor implements Runnable {
 
@@ -48,7 +49,10 @@ public class DataProcessor implements Runnable {
                 key.attach(object);
 
                 int id = this.getParent().getGame().getPlayers().size() + 1;
-                this.getParent().getGame().getPlayers().add(new Player(id, (String) object, this.getParent().getStartingMoney()));
+                Player player = new Player(id, (String) object, this.getParent().getStartingMoney());
+                this.getParent().getGame().getPlayers().add(player);
+
+                this.getParent().echo(player.getName(), Utils.getObjectAsBytes(player));
 
                 if (this.getParent().getGame().getPlayers().size() == this.getParent().getGame().getNumOfPlayers()) {
                     this.getParent().getGame().init();
@@ -76,6 +80,14 @@ public class DataProcessor implements Runnable {
             } else if (object.equals("check") || object.equals("fold") || object.equals("call") || ((String) object).contains("bet") || object.equals("all-in")) {
                 System.out.println("[Server] " + key.attachment() + ": " + object);
                 this.getParent().setLastMessage((String) object);
+            } else if (object.equals("ack")) {
+                System.out.println("[Server] Received ack");
+                SocketChannel socketChannel = (SocketChannel) key.channel();
+                if (!this.getParent().getPendingData().get(socketChannel).isEmpty()) {
+                    System.out.println("[Server] Sending more data");
+                    byte[] bytes = this.getParent().getPendingData().get(socketChannel).remove(0);
+                    this.getParent().echo(key, bytes);
+                }
             }
         }
     }

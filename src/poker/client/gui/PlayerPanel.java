@@ -105,9 +105,8 @@ public class PlayerPanel extends JPanel {
         for (JLabel label : items) {
             switch (label.getName()) {
                 case "chip":
-                    label = this.getItems().get(this.getItems().indexOf(label));
                     for (JLabel chip : chips) {
-                        if (chip.getName().equals(String.valueOf(player.getBlind()))) {
+                        if (chip.getName().equals(String.valueOf(this.getPlayer().getBlind()))) {
                             label.setIcon(chip.getIcon());
                         }
                     }
@@ -142,18 +141,6 @@ public class PlayerPanel extends JPanel {
         }
     }
 
-    private void setChipPosition(String name, int posX, int posY) {
-        for (JLabel button : chips) {
-            if (button.getName().equals(name)) {
-                button.setSize(chipSize, chipSize);
-                button.setLocation(this.getInsets().left + posX - (button.getWidth() / 2), this.getInsets().top + posY - (button.getHeight() / 2));
-                button.setVisible(true);
-            } else {
-                button.setVisible(false);
-            }
-        }
-    }
-
     private void initComponents(boolean showCards, boolean isClient) {
         JLabel card1 = new JLabel("");
         JLabel card2 = new JLabel("");
@@ -164,8 +151,6 @@ public class PlayerPanel extends JPanel {
         card2.setName("card2");
         name.setName("name");
         chip.setName("chip");
-
-        String blind = "";
 
         name.setText("Player name here");
         name.setFont(new Font("Sans", Font.BOLD, 12));
@@ -178,56 +163,56 @@ public class PlayerPanel extends JPanel {
                 card1.setBounds(0, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, 0, cardWidth, cardHeight);
                 name.setBounds(0, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(blind, 2 * cardWidth + 30, 20);
+                chip.setBounds(2 * cardWidth + 10, 0, chipSize, chipSize);
                 break;
             case 2:
                 this.setLocation(parent.getInsets().left + 5, parent.getInsets().top + 200);
                 card1.setBounds(0, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, 0, cardWidth, cardHeight);
                 name.setBounds(0, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(blind, 2 * cardWidth + 30, 40);
+                chip.setBounds(2 * cardWidth + 10, 10, chipSize, chipSize);
                 break;
             case 3:
                 this.setLocation(parent.getInsets().left + 72, parent.getInsets().top + 50);
                 name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(blind, 2 * cardWidth + 30, 100);
+                chip.setBounds(2 * cardWidth + 10, cardHeight + 10, chipSize, chipSize);
                 break;
             case 4:
                 this.setLocation(parent.getInsets().left + 250, parent.getInsets().top + 20);
                 name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(blind, cardWidth + (chipSize / 2) - 5, name.getHeight() + cardHeight + (chipSize / 2) + 5);
+                chip.setBounds(cardWidth - 10, name.getHeight() + cardHeight + 10, chipSize, chipSize);
                 break;
             case 5:
                 this.setLocation(parent.getInsets().left + 430, parent.getInsets().top + 20);
                 name.setBounds(0, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(0, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 5, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(blind, cardWidth + (chipSize / 2) - 10, name.getHeight() + cardHeight + (chipSize / 2) + 5);
+                chip.setBounds(cardWidth - 20, name.getHeight() + cardHeight + 10, chipSize, chipSize);
                 break;
             case 6:
                 this.setLocation(parent.getInsets().left + 580, parent.getInsets().top + 40);
                 name.setBounds(chipSize + 5, 0, name.getPreferredSize().width, name.getPreferredSize().height);
                 card1.setBounds(chipSize + 5, name.getHeight() + 5, cardWidth, cardHeight);
                 card2.setBounds(chipSize + cardWidth + 10, name.getHeight() + 5, cardWidth, cardHeight);
-                this.setChipPosition(blind, 30, name.getHeight() + cardHeight + 20);
+                chip.setBounds(0, name.getHeight() + cardHeight, chipSize, chipSize);
                 break;
             case 7:
                 this.setLocation(parent.getInsets().left + 620, parent.getInsets().top + 200);
                 card1.setBounds(chipSize + 5, 0, cardWidth, cardHeight);
                 card2.setBounds(chipSize + 10 + cardWidth, 0, cardWidth, cardHeight);
                 name.setBounds(chipSize + 5, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(blind, 20, 40);
+                chip.setBounds(0, cardHeight / 2 - 10, chipSize, chipSize);
                 break;
             case 8:
                 this.setLocation(parent.getInsets().left + 550, parent.getInsets().top + 340);
                 card1.setBounds(chipSize + 5, 0, cardWidth, cardHeight);
                 card2.setBounds(cardWidth + 10 + chipSize, 0, cardWidth, cardHeight);
                 name.setBounds(chipSize + 5, cardHeight + 5, name.getPreferredSize().width, name.getPreferredSize().height);
-                this.setChipPosition(blind, 20, 20);
+                chip.setBounds(0, 0, chipSize, chipSize);
                 break;
         }
 
