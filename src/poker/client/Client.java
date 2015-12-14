@@ -145,7 +145,7 @@ public class Client implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select(1000);
+                this.getSelector().selectNow();
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -237,8 +237,6 @@ public class Client implements Runnable {
             byte[] data = new byte[this.getBuffSize()];
             readBuffer.get(data, 0, read);
 
-            //this.processData(key, data);
-
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
         } catch (IOException e) {
@@ -258,11 +256,11 @@ public class Client implements Runnable {
 
             socketChannel.write(ByteBuffer.wrap(data));
 
-            try {
-                Thread.sleep(5);
+            /*try {
+                Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            }
+            }*/
 
             key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {

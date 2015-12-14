@@ -58,7 +58,7 @@ public class PlayerPanel extends JPanel {
         this.setVisible(false);
     }
 
-    public PlayerPanel(GamePanel parent, Player player, int type, boolean showCards, boolean client) {
+    /*public PlayerPanel(GamePanel parent, Player player, int type, boolean showCards, boolean client) {
         this.type = type;
         this.parent = parent;
         this.player = player;
@@ -79,7 +79,7 @@ public class PlayerPanel extends JPanel {
         this.setOpaque(true);
         this.setBackground(new Color(0, 0, 0, 0));
         this.initComponents(showCards, client);
-    }
+    }*/
 
     public int getType() {
         return type;
@@ -105,6 +105,7 @@ public class PlayerPanel extends JPanel {
         for (JLabel label : items) {
             switch (label.getName()) {
                 case "chip":
+                    label = this.getItems().get(this.getItems().indexOf(label));
                     for (JLabel chip : chips) {
                         if (chip.getName().equals(String.valueOf(player.getBlind()))) {
                             label.setIcon(chip.getIcon());
@@ -112,8 +113,7 @@ public class PlayerPanel extends JPanel {
                     }
                     break;
                 case "name":
-                    label.setText("");
-                    label.setSize(label.getPreferredSize());
+                    label = this.getItems().get(this.getItems().indexOf(label));
                     label.setText(player.getName() + " (" + player.getMoney() + ")");
                     label.setSize(label.getPreferredSize());
                     if (isClient) {
@@ -123,6 +123,7 @@ public class PlayerPanel extends JPanel {
                     }
                     break;
                 case "card1":
+                    label = this.getItems().get(this.getItems().indexOf(label));
                     if (showCards || isClient) {
                         label.setIcon(player.getCards().get(0).getCardImage());
                     } else {
@@ -130,6 +131,7 @@ public class PlayerPanel extends JPanel {
                     }
                     break;
                 case "card2":
+                    label = this.getItems().get(this.getItems().indexOf(label));
                     if (showCards || isClient) {
                         label.setIcon(player.getCards().get(1).getCardImage());
                     } else {
@@ -232,6 +234,7 @@ public class PlayerPanel extends JPanel {
         card1.setVisible(true);
         card2.setVisible(true);
         name.setVisible(true);
+        chip.setVisible(true);
 
         this.getItems().add(card1);
         this.getItems().add(card2);

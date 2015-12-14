@@ -144,7 +144,7 @@ public class Server implements Runnable {
 
         try {
             while (!Thread.currentThread().isInterrupted()) {
-                this.getSelector().select(5000);
+                this.getSelector().selectNow();
 
                 Iterator<SelectionKey> keys = this.getSelector().selectedKeys().iterator();
 
@@ -229,8 +229,6 @@ public class Server implements Runnable {
             byte[] data = new byte[this.getBuffSize()];
             readBuffer.get(data, 0, read);
 
-            //this.processData(key, data);
-
             Thread thread = new Thread(new DataProcessor(this, key, data));
             thread.start();
         } catch (IOException e) {
@@ -256,13 +254,11 @@ public class Server implements Runnable {
                 key.interestOps(SelectionKey.OP_READ);
 
                 try {
-                    Thread.sleep(250);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-
-            key.interestOps(SelectionKey.OP_READ);
         } catch (IOException e) {
             e.printStackTrace();
         }
